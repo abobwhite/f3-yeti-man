@@ -4,6 +4,7 @@ Status: proposed; intent and capability map approved, module specifications awai
 Prepared: 2026-11-21. This directory is the specification entry point.
 Domain terminology revised: 2026-11-22. Admin configuration, TypeScript and local database requirements revised: 2026-11-23. The subsequent focused interview decisions are applied throughout; see D28–D36 in the decision register.
 Technical interview applied: 2026-11-23; confirmed hosting, operations and stack direction are recorded as D42–D48.
+Persistence approach confirmed: 2026-11-24; D49 selects the official MongoDB driver with module-local repositories and Zod runtime schemas.
 
 ## Objective
 
@@ -75,7 +76,7 @@ Every `SPEC-<module-id>.md` inherits SPEC-common.md. Supporting documents do not
 
 ## Confirmed technical direction
 
-- One centrally operated service supports independent, isolated workspace/region installations. Core stack: Node.js, TypeScript, Slack Bolt and the official MongoDB driver, with a small supporting dependency set.
+- One centrally operated service supports independent, isolated workspace/region installations. Core stack: Node.js, TypeScript, Slack Bolt and the official MongoDB driver, with small domain-specific repositories and Zod runtime schemas. Domain services own transactional workflows; repositories own tenant-scoped persistence and return plain application types. See the [shared persistence contract](SPEC-common.md#persistence-and-runtime-validation); no ODM/ORM is selected.
 - Production uses Docker on DigitalOcean App Platform with managed MongoDB, initially targeting approximately USD $25/month across the initial installations. Actual sizing/cost and transaction support must be verified; the baseline is not highly available.
 - Initial forecast: one to approximately three regions, about 500 active PAX in the described regions, roughly 2–3 Preblast/Backblast postings per day and fewer than 20 daily report requests. The PAX figure is not confirmed as a per-region count; forecasts are not capacity limits.
 - Automatic backups and tested restoration target no more than 24 hours of lost changes and recovery within one business day. These are operating targets, not a provider SLA.

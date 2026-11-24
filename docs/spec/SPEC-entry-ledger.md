@@ -65,6 +65,8 @@ LEDGER-22: Provide the admin-only cross-season entry-list query defined in [the 
 
 ## Data model
 
+Implement these collections through ledger-local repositories over the official MongoDB driver, with Zod document schemas and result decoding under the [common persistence contract](SPEC-common.md#persistence-and-runtime-validation). Ledger command services own the transactional workflow in LEDGER-15: season/configuration fence writes, conditional entry/version changes, score projections, append-only revisions, operation receipts and outbox intent use the same session. Keep scoring rules independent of MongoDB types. Unique indexes include archived entries; use active-only predicates for competition reads and explicit status handling for identity/source lookup and admin history.
+
 | Collection | Key fields |
 |---|---|
 | `seasons` | Tenant keys, seasonId, selector, label, startDate, endDate, timezone, state `open/locked`, mutationFence, published scoring policy/generation, pending recalculation operation/status, lock/unlock audit metadata |
@@ -108,6 +110,8 @@ registerSeasonAdminPanel(homeRegistry) → composition-root registration
 `EntryView` resolves points/policy through the season's published scoring generation and current entry fact version; it must not expose a stale points field during staged application. Normal saves/edits atomically add the matching score projection for the current generation and new fact version. Immutable projections for older versions remain auditable.
 
 `saveEntry` accepts competition fields plus the structured `workoutReference`, not an official-workout mutation payload. `SaveReceipt` includes entry/version, per-attendee points, committed state and summary refresh status. Save success means durable DB commit, even if Slack rendering is pending. A retry returns the same receipt and cannot award twice. Archive/restore receipts identify the current status/version and pending summary refresh; archive-list access requires admin authorization. Competition read/aggregation APIs default explicitly to `status: active`; archived-record inspection is a separate explicit filter/access path, not an accidental inclusion in totals. Foreign/missing IDs use indistinguishable public errors. Consumer read APIs expose no tokens or other tenant data. Reporting can request a scoped aggregation adapter/read snapshot from this provider rather than bypassing it with raw MongoDB access.
+
+The ledger read provider owns MongoDB reporting pipelines and exposes typed report queries or a constrained snapshot adapter. It applies tenant/season/status predicates, resolves the published scoring generation and decodes results with Zod. It does not accept unrestricted consumer pipelines or expose raw collections; compound reports share one consistent committed snapshot under REPORT-07.
 
 ## Commands and testing strategy
 
