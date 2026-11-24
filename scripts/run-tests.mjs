@@ -21,5 +21,9 @@ if (files.length === 0) {
   );
 }
 
-const result = spawnSync(process.execPath, ['--test', ...files], { stdio: 'inherit' });
+const result = spawnSync(
+  process.execPath,
+  ['--test', ...(kind === 'integration' ? ['--test-concurrency=1'] : []), ...files],
+  { stdio: 'inherit' },
+);
 process.exitCode = result.status ?? 1;

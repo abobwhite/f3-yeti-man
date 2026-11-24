@@ -14,6 +14,7 @@ const result = spawnSync(
   process.execPath,
   [
     '--test',
+    '--test-concurrency=1',
     '--experimental-test-coverage',
     '--test-coverage-include=src/**/*.ts',
     '--test-reporter=spec',
