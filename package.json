@@ -9,7 +9,15 @@
     "dev": "node --watch src/app.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.build.json",
-    "start": "node dist/app.js"
+    "start": "node dist/app.js",
+    "test:unit": "node scripts/run-tests.mjs unit",
+    "test:integration": "node scripts/run-tests.mjs integration",
+    "test:coverage": "node scripts/check-coverage.mjs",
+    "test:module": "node scripts/test-module.mjs",
+    "test:slack": "node scripts/run-tests.mjs slack",
+    "lint": "biome check src scripts tests package.json tsconfig.json tsconfig.build.json manifest.json biome.json",
+    "format": "biome check --write src scripts tests package.json tsconfig.json tsconfig.build.json manifest.json biome.json",
+    "check": "node scripts/check.mjs"
   },
   "engines": {
     "node": ">=24.22.3 <25"
@@ -19,6 +27,7 @@
     "dotenv": "18.0.9"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.6.9",
     "@slack/cli-hooks": "2.0.0",
     "@types/node": "24.19.2",
     "typescript": "7.0.2"
