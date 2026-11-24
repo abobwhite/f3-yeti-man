@@ -77,6 +77,8 @@ REPORT-20: Entry archive/restore, attendance changes, temperature corrections cr
 
 ## Interfaces, style and structure
 
+Use the ledger's typed report queries or constrained snapshot adapter for competition reads. The ledger owns MongoDB pipelines, mandatory tenant/season/active predicates and published-scoring-generation resolution; reporting never bypasses it with raw collections or arbitrary pipeline input. The ledger decodes aggregation results with Zod before returning plain typed results. All metrics for one report use the same committed snapshot. Reporting owns module-local official-driver repositories and Zod document schemas for its snapshots, automation configuration and delivery state under the [common persistence contract](SPEC-common.md#persistence-and-runtime-validation).
+
 ```text
 buildPaxLeaderboard(context, season, page, scope = region) → PrivateReportSnapshot
 buildColdEntryLeaderboard(context, season, page, scope = region) → PrivateReportSnapshot

@@ -55,6 +55,9 @@ The user's 2026-11-23 configuration requirements supersede fixed calendar/scorin
 | [Request verification](https://docs.slack.dev/authentication/verifying-requests-from-slack/) | Signed raw-body verification |
 | [Events API](https://docs.slack.dev/apis/events-api/) | Scoped subscriptions and retry-aware delivery |
 | [MongoDB transactions](https://www.mongodb.com/docs/manual/core/transactions/) | Atomic multi-document saves and transaction-capable deployment |
+| [Node driver transactions](https://www.mongodb.com/docs/drivers/node/current/crud/transactions/) | Checked 2026-11-24: pass the same session to participating operations, account for callback retries and avoid parallel operations inside a transaction |
+| [Node driver TypeScript limitations](https://www.mongodb.com/docs/drivers/node/current/typescript/) | Checked 2026-11-24: typed collections do not provide complete checking of nested dot-path queries; explicit schemas and query verification remain necessary |
+| [Zod parsing and inference](https://zod.dev/basics) | Checked 2026-11-24: runtime parsing and inferred TypeScript data shapes; no persistence, transaction or database-constraint guarantees |
 | [TypeScript compiler settings](https://www.typescriptlang.org/tsconfig/) | Balanced strict-family baseline without extra optional-property/indexed-access checks |
 | [MongoMemoryReplSet quick start](https://typegoose.github.io/mongodb-memory-server/docs/guides/quick-start-guide/) | Real ephemeral replica set; WiredTiger supports transaction tests |
 | [Memory-server configuration](https://typegoose.github.io/mongodb-memory-server/docs/api/config-options/) | Pin/cache binaries or use a system binary for offline development |
@@ -74,6 +77,8 @@ Some component `.md` endpoints were unavailable through the browsing tool; their
 ## Inferences and required proofs
 
 The user confirmed DigitalOcean App Platform plus managed MongoDB, central service ownership, approximate initial budget/traffic, recovery targets, indefinite competition-history retention, automatic checked deployment and the core stack on 2026-11-23 (D42–D48). These are user decisions, not requirements imposed by Slack/F3 or performance/provider-SLA claims. Supporting package versions remain to be selected during implementation.
+
+On 2026-11-24, the user confirmed official driver + module-local repositories + Zod (D49). The repository boundary and division of domain/persistence responsibilities are application design decisions motivated by the ledger's consistency requirements. The official sources above establish driver/schema capabilities, not proof of tenant isolation, season-lock correctness or query performance. This specification update installs no dependency and claims no implementation or runtime verification of the new abstraction.
 
 The container topology, natural-key unique index, season write fence, optimistic versions, snapshot sharing and source-matching strategy are engineering designs. They are not claimed to be prescribed by Slack or F3. Their correctness must be proven by implementation tests and sandbox evidence. Deferred serverless sources preserve the earlier comparison; they do not require a second V1 runtime.
 
