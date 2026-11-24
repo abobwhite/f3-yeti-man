@@ -129,3 +129,27 @@ CSV exports, national comparisons, prize selection/fulfillment, and shared inter
 ## Open questions
 
 Confirm proposed command names, competition-rank numbering, season default, snapshot lifetime and initial page size through the main specification review. These do not alter the user-confirmed scoring order. The additional scheduling DST and rendering defaults are identified in automated-reports.md.
+
+## Implementation task links
+
+See [the complete issue index](implementation-tasks.md) and [execution plan](../../tasks/plan.md). The links below map this document’s requirements to implementation and verification work; they do not change requirement semantics or imply completion.
+
+| Task / issue | Scope | Requirements / acceptance cases |
+|---|---|---|
+| [T19B #22](https://github.com/abobwhite/f3-yeti-man/issues/22) | Publish complete scoring generations with consistent read semantics | REPORT-13 |
+| [T21 #25](https://github.com/abobwhite/f3-yeti-man/issues/25) | Provide consistent tenant-scoped report reads and season resolution | REPORT-01, REPORT-02, REPORT-06, REPORT-07, REPORT-10, REPORT-11, REPORT-12, REPORT-13 |
+| [T22 #26](https://github.com/abobwhite/f3-yeti-man/issues/26) | Show the private total-points PAX leaderboard | REPORT-02, REPORT-03, REPORT-06, REPORT-10, REPORT-11 |
+| [T23 #27](https://github.com/abobwhite/f3-yeti-man/issues/27) | Share only a reviewed report snapshot to an authorized channel | REPORT-08, REPORT-09, REPORT-10, REPORT-11, REPORT-12, REPORT-13 |
+| [C3 #28](https://github.com/abobwhite/f3-yeti-man/issues/28) | Verify manual points leaderboard and deliberate sharing | REPORT-A1, REPORT-A2, REPORT-A5, REPORT-A6, REPORT-A7, REPORT-A8, REPORT-A9, REPORT-A10 |
+| [T31 #37](https://github.com/abobwhite/f3-yeti-man/issues/37) | Archive and restore entries through the audited ledger lifecycle | REPORT-12, REPORT-20 |
+| [T35 #41](https://github.com/abobwhite/f3-yeti-man/issues/41) | Report the regional AO points leaderboard | REPORT-04, REPORT-06, REPORT-07, REPORT-10, REPORT-12, REPORT-13 |
+| [T36 #42](https://github.com/abobwhite/f3-yeti-man/issues/42) | Report AO totals with each PAX's AO and regional points | REPORT-15, REPORT-17 |
+| [T37 #43](https://github.com/abobwhite/f3-yeti-man/issues/43) | Show personal season results and paginated entry history | REPORT-05, REPORT-06, REPORT-10, REPORT-12, REPORT-13 |
+| [T38 #44](https://github.com/abobwhite/f3-yeti-man/issues/44) | Rank PAX by number of entries at 32°F or lower | REPORT-18, REPORT-19, REPORT-20 |
+| [T39 #45](https://github.com/abobwhite/f3-yeti-man/issues/45) | Complete command help, season selectors and report discoverability | REPORT-01, REPORT-17, REPORT-19 |
+| [C5 #52](https://github.com/abobwhite/f3-yeti-man/issues/52) | Verify the complete non-scheduled V1 feature set | REPORT-A3, REPORT-A4, REPORT-A9, REPORT-A10, REPORT-A12, REPORT-A14, REPORT-A15, REPORT-A16 |
+| [T45 #53](https://github.com/abobwhite/f3-yeti-man/issues/53) | Persist validated report automation definitions and report eligibility | REPORT-14, REPORT-16, REPORT-17, REPORT-20 |
+| [T46 #54](https://github.com/abobwhite/f3-yeti-man/issues/54) | Configure and preview multiple automated reports in admin Home | REPORT-14, REPORT-16 |
+| [T48A #56](https://github.com/abobwhite/f3-yeti-man/issues/56) | Claim persisted due report occurrences with cross-instance leases | REPORT-16 |
+| [T49 #58](https://github.com/abobwhite/f3-yeti-man/issues/58) | Render selected automated report sections from one scoring snapshot | REPORT-14, REPORT-15, REPORT-17, REPORT-20 |
+| [C6 #61](https://github.com/abobwhite/f3-yeti-man/issues/61) | Verify season-bounded scheduled reports across the full catalog | REPORT-A11, REPORT-A12, REPORT-A13, REPORT-A14, REPORT-A15, REPORT-A16 |

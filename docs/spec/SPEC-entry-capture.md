@@ -129,3 +129,25 @@ Bulk CSV import, awarding points to PAX without workspace Slack identities, hard
 ## Open questions
 
 Capture privacy/destination, unresolved-attendee handling, restore, future-start rejection and public-AO-only scope are confirmed. Proposed inactivity expiry and remaining local-member eligibility details are recorded in [the review register](decisions-and-open-questions.md).
+
+## Implementation task links
+
+See [the complete issue index](implementation-tasks.md) and [execution plan](../../tasks/plan.md). The links below map this document’s requirements to implementation and verification work; they do not change requirement semantics or imply completion.
+
+| Task / issue | Scope | Requirements / acceptance cases |
+|---|---|---|
+| [T07 #8](https://github.com/abobwhite/f3-yeti-man/issues/8) | Build the leased durable-operation and message-outbox runtime | CAPTURE-13 |
+| [T11 #12](https://github.com/abobwhite/f3-yeti-man/issues/12) | Save versioned entries atomically with duplicate and retry protection | CAPTURE-07, CAPTURE-14 |
+| [T12 #13](https://github.com/abobwhite/f3-yeti-man/issues/13) | Publish version-aware saved entry summaries through the outbox | CAPTURE-08, CAPTURE-13 |
+| [T13 #14](https://github.com/abobwhite/f3-yeti-man/issues/14) | Capture manual entries in private Slack forms | CAPTURE-01, CAPTURE-02, CAPTURE-03, CAPTURE-04, CAPTURE-05, CAPTURE-06, CAPTURE-07, CAPTURE-10, CAPTURE-11, CAPTURE-14 |
+| [T14 #15](https://github.com/abobwhite/f3-yeti-man/issues/15) | Modify entries privately without replacing the committed public view | CAPTURE-09, CAPTURE-10, CAPTURE-11, CAPTURE-12 |
+| [C1 #16](https://github.com/abobwhite/f3-yeti-man/issues/16) | Verify the complete manual-entry milestone | CAPTURE-A2, CAPTURE-A3, CAPTURE-A4, CAPTURE-A5, CAPTURE-A6, CAPTURE-A9, CAPTURE-A10, CAPTURE-A11, CAPTURE-A12, CAPTURE-A13 |
+| [T20 #23](https://github.com/abobwhite/f3-yeti-man/issues/23) | Wire scoring review, progress and unlock catch-up into admin flows | CAPTURE-17 |
+| [T28 #33](https://github.com/abobwhite/f3-yeti-man/issues/33) | Collect initial Backblast entry details inline in its thread | CAPTURE-02, CAPTURE-03, CAPTURE-04, CAPTURE-06, CAPTURE-10, CAPTURE-11, CAPTURE-12, CAPTURE-14 |
+| [T29 #34](https://github.com/abobwhite/f3-yeti-man/issues/34) | Reconcile Backblast capture with existing manual and archived entries | CAPTURE-14 |
+| [C4 #36](https://github.com/abobwhite/f3-yeti-man/issues/36) | Verify trusted source ingestion and inline capture | CAPTURE-A1, CAPTURE-A4, CAPTURE-A7, CAPTURE-A9, CAPTURE-A10, CAPTURE-A11, CAPTURE-A12 |
+| [T32 #38](https://github.com/abobwhite/f3-yeti-man/issues/38) | Expose private admin Archive and Restore confirmation flows | CAPTURE-15, CAPTURE-16 |
+| [T34 #40](https://github.com/abobwhite/f3-yeti-man/issues/40) | Browse and individually correct entries in private admin App Home | CAPTURE-18 |
+| [T39 #45](https://github.com/abobwhite/f3-yeti-man/issues/45) | Complete command help, season selectors and report discoverability | CAPTURE-01 |
+| [T40 #46](https://github.com/abobwhite/f3-yeti-man/issues/46) | Expose privacy-safe operational health and actionable failures | CAPTURE-12, CAPTURE-13 |
+| [C5 #52](https://github.com/abobwhite/f3-yeti-man/issues/52) | Verify the complete non-scheduled V1 feature set | CAPTURE-A8, CAPTURE-A14 |

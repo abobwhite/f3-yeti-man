@@ -89,3 +89,17 @@ Direct F3 Nation app/API integration is a desired future capability: associate e
 ## Open questions
 
 The real F3 Nation app/bot identifiers and a sanitized event JSON sample remain installation prerequisites; copied text and screenshots prove the visible format, not the raw Events API shape. See [source evidence](source-evidence.md) and [review register](decisions-and-open-questions.md).
+
+## Implementation task links
+
+See [the complete issue index](implementation-tasks.md) and [execution plan](../../tasks/plan.md). The links below map this document’s requirements to implementation and verification work; they do not change requirement semantics or imply completion.
+
+| Task / issue | Scope | Requirements / acceptance cases |
+|---|---|---|
+| [T24 #29](https://github.com/abobwhite/f3-yeti-man/issues/29) | Capture verified F3 source identity and sanitized event fixtures | INGEST-01, INGEST-03, INGEST-A1, INGEST-A2, INGEST-A4, INGEST-A9 |
+| [T25 #30](https://github.com/abobwhite/f3-yeti-man/issues/30) | Parse supported F3 Preblast and Backblast messages deterministically | INGEST-03, INGEST-04, INGEST-05, INGEST-16 |
+| [T26 #31](https://github.com/abobwhite/f3-yeti-man/issues/31) | Match Preblast times by workout reference rather than posting order | INGEST-06, INGEST-07, INGEST-08, INGEST-09 |
+| [T27 #32](https://github.com/abobwhite/f3-yeti-man/issues/32) | Receive trusted F3 message events through a replay-safe inbox | INGEST-01, INGEST-02, INGEST-12 |
+| [T29 #34](https://github.com/abobwhite/f3-yeti-man/issues/34) | Reconcile Backblast capture with existing manual and archived entries | INGEST-10, INGEST-11, INGEST-15 |
+| [T30 #35](https://github.com/abobwhite/f3-yeti-man/issues/35) | Handle source changes, reply-toggle races and uncertain thread delivery | INGEST-13, INGEST-14 |
+| [C4 #36](https://github.com/abobwhite/f3-yeti-man/issues/36) | Verify trusted source ingestion and inline capture | INGEST-A1, INGEST-A2, INGEST-A3, INGEST-A4, INGEST-A5, INGEST-A6, INGEST-A7, INGEST-A8, INGEST-A9, INGEST-A10 |

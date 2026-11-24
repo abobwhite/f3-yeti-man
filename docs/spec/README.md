@@ -28,6 +28,8 @@ Direct F3 Nation integration is a desired future capability, deferred from V1. P
 | Document | Purpose |
 |---|---|
 | [Capability map](capability-map.md) | Approved module boundaries and technical dependency direction |
+| [Implementation tasks](implementation-tasks.md) | GitHub issue index, dependencies and requirement-to-task links |
+| [Implementation plan](../../tasks/plan.md) | Ordered issue graph, parallel lanes, verification milestones and risks |
 | [Implementation priorities](implementation-priorities.md) | User-specified six-priority delivery order, with prerequisite safeguards |
 | [Admin configuration contract](configuration-contract.md) | Required setup gate, configurable season dates/scoring, automatic-reply toggle |
 | [Common contract](SPEC-common.md) | Stack, commands, structure, style, quality, security and boundaries inherited by every module |
@@ -42,7 +44,7 @@ Direct F3 Nation integration is a desired future capability, deferred from V1. P
 | [Decisions and open questions](decisions-and-open-questions.md) | Confirmed decisions, proposed defaults and deployment prerequisites |
 | [Source evidence](source-evidence.md) | External constraints and user-provided sample evidence |
 
-Every `SPEC-<module-id>.md` inherits SPEC-common.md. Supporting documents do not create additional modules. Requirements use stable IDs for review and future tests. These are requirements and interface contracts, not an implementation plan or task list.
+Every `SPEC-<module-id>.md` inherits SPEC-common.md. Supporting documents do not create additional modules. Requirements use stable IDs for review and future tests. Module specifications define requirements and interface contracts; the linked plan and task index separately record execution work in GitHub Issues.
 
 ## Confirmed product rules
 
@@ -137,4 +139,4 @@ Admins review these seeded defaults before activation and may replace them with 
 
 ## Delivery boundary
 
-This change writes specification documents only. No app has been created, installed, run or deployed. Proposed npm/Docker commands describe the future implementation contract; no package scripts or containers exist yet. Planning, scaffolding and implementation follow review of these documents.
+This change writes specification documents only. No app has been created, installed, run or deployed. Proposed npm/Docker commands describe the future implementation contract; no package scripts or containers exist yet. The user-requested [implementation plan](../../tasks/plan.md) and [GitHub task index](implementation-tasks.md) are now recorded. Scaffolding and application implementation have not started.

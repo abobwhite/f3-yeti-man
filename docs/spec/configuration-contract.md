@@ -93,3 +93,23 @@ setAutomaticBackblastReplies(context, enabled, expectedVersion) → RegionConfig
 ```
 
 Every entry still requires a non-null, same-region configured `workoutReference.aoId`, enforced by the ledger even if submitted metadata is forged. Each PAX on the entry stores a stable Slack user identifier alongside tenant context; display labels never replace it. Test readiness and settings in two regions with different intervals, band counts/values and toggle states, plus stale UI, overlapping ranges, gaps, locked seasons and queued replies.
+
+## Implementation task links
+
+See [the complete issue index](implementation-tasks.md) and [execution plan](../../tasks/plan.md). The links below map this document’s requirements to implementation and verification work; they do not change requirement semantics or imply completion.
+
+| Task / issue | Scope | Requirements / acceptance cases |
+|---|---|---|
+| [T08 #9](https://github.com/abobwhite/f3-yeti-man/issues/9) | Implement configurable scoring and workout-reference validation | CONFIG-09, CONFIG-10 |
+| [T09 #10](https://github.com/abobwhite/f3-yeti-man/issues/10) | Persist seasons and enforce transactional season write fences | CONFIG-06, CONFIG-07, CONFIG-08 |
+| [T10 #11](https://github.com/abobwhite/f3-yeti-man/issues/11) | Provide the required setup gate and minimal legitimate admin setup | CONFIG-01, CONFIG-02, CONFIG-03, CONFIG-04, CONFIG-05 |
+| [T15 #17](https://github.com/abobwhite/f3-yeti-man/issues/17) | Manage region settings, designated admins and reply mode in App Home | CONFIG-05, CONFIG-12, CONFIG-13 |
+| [T17 #19](https://github.com/abobwhite/f3-yeti-man/issues/19) | Manage configurable season dates and lock controls in App Home | CONFIG-06, CONFIG-07, CONFIG-08 |
+| [T18 #20](https://github.com/abobwhite/f3-yeti-man/issues/20) | Preview versioned scoring-policy changes and affected open seasons | CONFIG-09, CONFIG-10, CONFIG-11, CONFIG-14 |
+| [T19A #21](https://github.com/abobwhite/f3-yeti-man/issues/21) | Stage resumable scoring-generation recalculation batches | CONFIG-14, CONFIG-15, CONFIG-16 |
+| [T19B #22](https://github.com/abobwhite/f3-yeti-man/issues/22) | Publish complete scoring generations with consistent read semantics | CONFIG-15, CONFIG-16 |
+| [T20 #23](https://github.com/abobwhite/f3-yeti-man/issues/23) | Wire scoring review, progress and unlock catch-up into admin flows | CONFIG-11, CONFIG-14, CONFIG-16, CONFIG-17 |
+| [T30 #35](https://github.com/abobwhite/f3-yeti-man/issues/35) | Handle source changes, reply-toggle races and uncertain thread delivery | CONFIG-12, CONFIG-13 |
+| [T39 #45](https://github.com/abobwhite/f3-yeti-man/issues/45) | Complete command help, season selectors and report discoverability | CONFIG-02, CONFIG-03 |
+| [T45 #53](https://github.com/abobwhite/f3-yeti-man/issues/53) | Persist validated report automation definitions and report eligibility | CONFIG-18 |
+| [T46 #54](https://github.com/abobwhite/f3-yeti-man/issues/54) | Configure and preview multiple automated reports in admin Home | CONFIG-18 |
