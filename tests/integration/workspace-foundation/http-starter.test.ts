@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createServer, type Server } from 'node:http';
 import test from 'node:test';
+import { openIntegrationDatabase } from '../database-harness.ts';
 
 function listen(server: Server): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -24,6 +25,7 @@ function close(server: Server): Promise<void> {
 }
 
 test('HTTP starter serves liveness and rejects an unsigned Slack request', async () => {
+  const harness = await openIntegrationDatabase();
   const slackApi = createServer((_request, response) => {
     response.setHeader('content-type', 'application/json');
     response.end(
@@ -35,18 +37,29 @@ test('HTTP starter serves liveness and rejects an unsigned Slack request', async
   const appPort = await listen(reservedPort);
   await close(reservedPort);
 
-  const keys = ['SLACK_BOT_TOKEN', 'SLACK_SIGNING_SECRET', 'SLACK_API_URL', 'PORT'] as const;
+  const keys = [
+    'SLACK_BOT_TOKEN',
+    'SLACK_SIGNING_SECRET',
+    'SLACK_API_URL',
+    'PORT',
+    'DEV_DB_MODE',
+    'MONGODB_URI',
+    'MONGODB_DATABASE',
+  ] as const;
   const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
   Object.assign(process.env, {
     SLACK_BOT_TOKEN: 'xoxb-local-test',
     SLACK_SIGNING_SECRET: 'local-test-signing-secret',
     SLACK_API_URL: `http://127.0.0.1:${slackApiPort}/api/`,
     PORT: String(appPort),
+    DEV_DB_MODE: harness.mode,
+    MONGODB_URI: harness.uri,
+    MONGODB_DATABASE: harness.connection.db.databaseName,
   });
 
-  let app: typeof import('../../../src/app.ts')['app'] | undefined;
+  let stopApp: typeof import('../../../src/app.ts')['stopApp'] | undefined;
   try {
-    ({ app } = await import('../../../src/app.ts'));
+    ({ stopApp } = await import('../../../src/app.ts'));
     const baseUrl = `http://127.0.0.1:${appPort}`;
     assert.equal((await fetch(`${baseUrl}/health/live`)).status, 200);
     const unsigned = await fetch(`${baseUrl}/slack/events`, {
@@ -56,8 +69,9 @@ test('HTTP starter serves liveness and rejects an unsigned Slack request', async
     });
     assert.equal(unsigned.status, 401);
   } finally {
-    if (app) await app.stop();
+    if (stopApp) await stopApp();
     await close(slackApi);
+    await harness.close();
     for (const key of keys) {
       const value = previous[key];
       if (value === undefined) delete process.env[key];
