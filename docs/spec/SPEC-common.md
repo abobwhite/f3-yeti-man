@@ -179,3 +179,24 @@ Private AO channels, provisional scoring identities without workspace Slack IDs,
 ## Open questions
 
 See [the central review register](decisions-and-open-questions.md). Proposed defaults and operational prerequisites must not be mistaken for user-confirmed decisions.
+
+## Implementation task links
+
+See [the complete issue index](implementation-tasks.md) and [execution plan](../../tasks/plan.md). The links below map this document’s requirements to implementation and verification work; they do not change requirement semantics or imply completion.
+
+| Task / issue | Scope | Requirements / acceptance cases |
+|---|---|---|
+| [T01 #2](https://github.com/abobwhite/f3-yeti-man/issues/2) | Scaffold the official Bolt starter without overwriting repository content | COMMON-03 |
+| [T02 #3](https://github.com/abobwhite/f3-yeti-man/issues/3) | Convert the starter to the balanced TypeScript build contract | COMMON-04 |
+| [T03 #4](https://github.com/abobwhite/f3-yeti-man/issues/4) | Provide the test, coverage, lint and module-check scripts | COMMON-01, COMMON-03 |
+| [T04 #5](https://github.com/abobwhite/f3-yeti-man/issues/5) | Support real ephemeral and Docker MongoDB integration modes | COMMON-02, COMMON-04 |
+| [T10 #11](https://github.com/abobwhite/f3-yeti-man/issues/11) | Provide the required setup gate and minimal legitimate admin setup | COMMON-05 |
+| [C1 #16](https://github.com/abobwhite/f3-yeti-man/issues/16) | Verify the complete manual-entry milestone | COMMON-01, COMMON-03, COMMON-05 |
+| [T40 #46](https://github.com/abobwhite/f3-yeti-man/issues/46) | Expose privacy-safe operational health and actionable failures | COMMON-03 |
+| [T41 #47](https://github.com/abobwhite/f3-yeti-man/issues/47) | Build the portable production Docker image and local app stack | COMMON-02, COMMON-04 |
+| [T42 #48](https://github.com/abobwhite/f3-yeti-man/issues/48) | Gate changes with reproducible CI checks and a checked production image | COMMON-03, COMMON-06 |
+| [T43 #49](https://github.com/abobwhite/f3-yeti-man/issues/49) | Define App Platform automatic promotion and application rollback | COMMON-06 |
+| [T44A #50](https://github.com/abobwhite/f3-yeti-man/issues/50) | Document and enforce indefinite competition retention and credential removal | COMMON-07 |
+| [T44B #51](https://github.com/abobwhite/f3-yeti-man/issues/51) | Prepare monitored backups and a tested isolated restore procedure | COMMON-07 |
+| [C5 #52](https://github.com/abobwhite/f3-yeti-man/issues/52) | Verify the complete non-scheduled V1 feature set | COMMON-02, COMMON-06, COMMON-07 |
+| [C7 #62](https://github.com/abobwhite/f3-yeti-man/issues/62) | Verify production readiness, regional isolation and recovery on the selected host | COMMON-01, COMMON-02, COMMON-03, COMMON-04, COMMON-05, COMMON-06, COMMON-07 |

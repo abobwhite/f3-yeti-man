@@ -150,3 +150,26 @@ Hard deletion, entry merging, weather verification, cross-region attendance cred
 ## Open questions
 
 Q02 is resolved: recalculate open seasons after impact review; preserve locked-season scores. Future-start rejection and admin restoration in unlocked seasons are also confirmed; neither remains an open question. See [the review register](decisions-and-open-questions.md).
+
+## Implementation task links
+
+See [the complete issue index](implementation-tasks.md) and [execution plan](../../tasks/plan.md). The links below map this document’s requirements to implementation and verification work; they do not change requirement semantics or imply completion.
+
+| Task / issue | Scope | Requirements / acceptance cases |
+|---|---|---|
+| [T08 #9](https://github.com/abobwhite/f3-yeti-man/issues/9) | Implement configurable scoring and workout-reference validation | LEDGER-02, LEDGER-03, LEDGER-04, LEDGER-05 |
+| [T09 #10](https://github.com/abobwhite/f3-yeti-man/issues/10) | Persist seasons and enforce transactional season write fences | LEDGER-01, LEDGER-13, LEDGER-14, LEDGER-15, LEDGER-16 |
+| [T11 #12](https://github.com/abobwhite/f3-yeti-man/issues/12) | Save versioned entries atomically with duplicate and retry protection | LEDGER-06, LEDGER-07, LEDGER-09, LEDGER-10, LEDGER-11, LEDGER-12, LEDGER-15 |
+| [T12 #13](https://github.com/abobwhite/f3-yeti-man/issues/13) | Publish version-aware saved entry summaries through the outbox | LEDGER-A8 |
+| [T14 #15](https://github.com/abobwhite/f3-yeti-man/issues/15) | Modify entries privately without replacing the committed public view | LEDGER-10, LEDGER-12 |
+| [C1 #16](https://github.com/abobwhite/f3-yeti-man/issues/16) | Verify the complete manual-entry milestone | LEDGER-A1, LEDGER-A2, LEDGER-A3, LEDGER-A4, LEDGER-A5, LEDGER-A6, LEDGER-A7, LEDGER-A8, LEDGER-A12, LEDGER-A13 |
+| [T17 #19](https://github.com/abobwhite/f3-yeti-man/issues/19) | Manage configurable season dates and lock controls in App Home | LEDGER-01, LEDGER-13, LEDGER-14, LEDGER-16 |
+| [T18 #20](https://github.com/abobwhite/f3-yeti-man/issues/20) | Preview versioned scoring-policy changes and affected open seasons | LEDGER-21 |
+| [T19A #21](https://github.com/abobwhite/f3-yeti-man/issues/21) | Stage resumable scoring-generation recalculation batches | LEDGER-21 |
+| [T19B #22](https://github.com/abobwhite/f3-yeti-man/issues/22) | Publish complete scoring generations with consistent read semantics | LEDGER-04, LEDGER-21 |
+| [T20 #23](https://github.com/abobwhite/f3-yeti-man/issues/23) | Wire scoring review, progress and unlock catch-up into admin flows | LEDGER-13, LEDGER-21 |
+| [C2 #24](https://github.com/abobwhite/f3-yeti-man/issues/24) | Verify complete admin configuration and scoring lifecycle | LEDGER-A14, LEDGER-A15, LEDGER-A16, LEDGER-A17 |
+| [T29 #34](https://github.com/abobwhite/f3-yeti-man/issues/34) | Reconcile Backblast capture with existing manual and archived entries | LEDGER-07, LEDGER-08 |
+| [T31 #37](https://github.com/abobwhite/f3-yeti-man/issues/37) | Archive and restore entries through the audited ledger lifecycle | LEDGER-17, LEDGER-18, LEDGER-19, LEDGER-20 |
+| [T33 #39](https://github.com/abobwhite/f3-yeti-man/issues/39) | Query the complete admin entry browser with stable filtered pagination | LEDGER-22 |
+| [C5 #52](https://github.com/abobwhite/f3-yeti-man/issues/52) | Verify the complete non-scheduled V1 feature set | LEDGER-A9, LEDGER-A10, LEDGER-A11, LEDGER-A18 |

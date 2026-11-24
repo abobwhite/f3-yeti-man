@@ -1,6 +1,6 @@
 # Implementation priorities — V1
 
-Status: user-directed priority order. This records product sequencing, not approval to start implementation or a replacement for the later technical plan/task list.
+Status: user-directed priority order. This records product sequencing, not approval to start implementation or a replacement for the linked technical plan/GitHub task list.
 
 | Priority | Capability | Scope |
 |---|---|---|
@@ -21,4 +21,18 @@ Likewise, the point leaderboard at priority 3 uses the configured ledger and mus
 
 The full admin entry browser is a priority-5 capability, not part of the priority-2 configuration UI or a prerequisite to the basic priority-1 individual editor. It reuses those editor/provider contracts when delivered; scheduled reporting remains last.
 
-These priorities sequence delivery within the existing modules; they do not rename modules, remove accepted V1 scope, alter the metric definitions or authorize deployment. The later implementation plan must trace its work/checkpoints to these six priorities and record prerequisite work explicitly.
+These priorities sequence delivery within the existing modules; they do not rename modules, remove accepted V1 scope, alter the metric definitions or authorize deployment. The [implementation plan](../../tasks/plan.md) and [issue-linked tasks](implementation-tasks.md) trace work/checkpoints to these six priorities and record prerequisite work explicitly.
+
+## Linked milestone checkpoints
+
+| Priority | Required exit checkpoint |
+|---|---|
+| 1 | [C1 #16](https://github.com/abobwhite/f3-yeti-man/issues/16) |
+| 2 | [C2 #24](https://github.com/abobwhite/f3-yeti-man/issues/24) |
+| 3 | [C3 #28](https://github.com/abobwhite/f3-yeti-man/issues/28) |
+| 4 | [C4 #36](https://github.com/abobwhite/f3-yeti-man/issues/36) |
+| 5 | [C5 #52](https://github.com/abobwhite/f3-yeti-man/issues/52) |
+| 6 | [C6 #61](https://github.com/abobwhite/f3-yeti-man/issues/61) |
+| Final rollout readiness | [C7 #62](https://github.com/abobwhite/f3-yeti-man/issues/62) |
+
+See [the task index](implementation-tasks.md) for individual issues and direct dependencies; do not use technical module order to override this delivery order.

@@ -95,3 +95,21 @@ dispatchDueReports(trustedRuntimeContext, now) → DispatchSummary
 ## Boundaries and open defaults
 
 Admin-configured recurring delivery is authorized V1 scope. Never schedule personal `/me` reports, cross-region destinations, automatic season rollover or deliveries beyond the bound season. The one-late-catch-up policy is confirmed. DST resolution, one-channel-per-automation and bounded top-N rendering remain proposed implementation defaults for review.
+
+## Implementation task links
+
+See [the complete issue index](implementation-tasks.md) and [execution plan](../../tasks/plan.md). The links below map this document’s requirements to implementation and verification work; they do not change requirement semantics or imply completion.
+
+| Task / issue | Scope | Requirements / acceptance cases |
+|---|---|---|
+| [T36 #42](https://github.com/abobwhite/f3-yeti-man/issues/42) | Report AO totals with each PAX's AO and regional points | AUTO-05 |
+| [T38 #44](https://github.com/abobwhite/f3-yeti-man/issues/44) | Rank PAX by number of entries at 32°F or lower | AUTO-03, AUTO-04, AUTO-05 |
+| [T45 #53](https://github.com/abobwhite/f3-yeti-man/issues/53) | Persist validated report automation definitions and report eligibility | AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05 |
+| [T46 #54](https://github.com/abobwhite/f3-yeti-man/issues/54) | Configure and preview multiple automated reports in admin Home | AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05, AUTO-09, AUTO-10 |
+| [T47 #55](https://github.com/abobwhite/f3-yeti-man/issues/55) | Compute timezone-aware daily and weekly occurrences within season dates | AUTO-06, AUTO-07, AUTO-08 |
+| [T48A #56](https://github.com/abobwhite/f3-yeti-man/issues/56) | Claim persisted due report occurrences with cross-instance leases | AUTO-09, AUTO-12 |
+| [T48B #57](https://github.com/abobwhite/f3-yeti-man/issues/57) | Coalesce missed schedules and invalidate obsolete queued runs | AUTO-07, AUTO-08, AUTO-12, AUTO-13 |
+| [T49 #58](https://github.com/abobwhite/f3-yeti-man/issues/58) | Render selected automated report sections from one scoring snapshot | AUTO-03, AUTO-04, AUTO-05, AUTO-11 |
+| [T50 #59](https://github.com/abobwhite/f3-yeti-man/issues/59) | Deliver scheduled channel posts with final authorization and cutoff checks | AUTO-07, AUTO-09, AUTO-10, AUTO-11, AUTO-12, AUTO-13 |
+| [T51 #60](https://github.com/abobwhite/f3-yeti-man/issues/60) | Show automation progress, run history and repair guidance to admins | AUTO-01, AUTO-12, AUTO-13 |
+| [C6 #61](https://github.com/abobwhite/f3-yeti-man/issues/61) | Verify season-bounded scheduled reports across the full catalog | AUTO-A1, AUTO-A2, AUTO-A3, AUTO-A4, AUTO-A5, AUTO-A6, AUTO-A7, AUTO-A8, AUTO-A9 |

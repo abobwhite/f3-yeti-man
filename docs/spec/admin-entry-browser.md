@@ -59,3 +59,14 @@ openAdminEntryBrowser(context, savedBrowserState?) → PrivateHomeView
 ## Boundaries
 
 Bulk listing and individual correction are in scope. Multi-entry batch changes, hard deletion, CSV export, cross-region access and bypassing locked seasons remain excluded. Bounded page size and exact Slack table/list layout are implementation choices within the existing accessibility/surface-validation requirements.
+
+## Implementation task links
+
+See [the complete issue index](implementation-tasks.md) and [execution plan](../../tasks/plan.md). The links below map this document’s requirements to implementation and verification work; they do not change requirement semantics or imply completion.
+
+| Task / issue | Scope | Requirements / acceptance cases |
+|---|---|---|
+| [T32 #38](https://github.com/abobwhite/f3-yeti-man/issues/38) | Expose private admin Archive and Restore confirmation flows | BROWSE-09 |
+| [T33 #39](https://github.com/abobwhite/f3-yeti-man/issues/39) | Query the complete admin entry browser with stable filtered pagination | BROWSE-01, BROWSE-02, BROWSE-03, BROWSE-04, BROWSE-05, BROWSE-10 |
+| [T34 #40](https://github.com/abobwhite/f3-yeti-man/issues/40) | Browse and individually correct entries in private admin App Home | BROWSE-01, BROWSE-02, BROWSE-03, BROWSE-04, BROWSE-05, BROWSE-06, BROWSE-07, BROWSE-08, BROWSE-09, BROWSE-10 |
+| [C5 #52](https://github.com/abobwhite/f3-yeti-man/issues/52) | Verify the complete non-scheduled V1 feature set | BROWSE-A1, BROWSE-A2, BROWSE-A3, BROWSE-A4, BROWSE-A5, BROWSE-A6, BROWSE-A7 |

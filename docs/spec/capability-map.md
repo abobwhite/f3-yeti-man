@@ -16,3 +16,5 @@ Technical dependency order: workspace-foundation → entry-ledger → entry-capt
 Dependency entries imply access to underlying providers transitively. Consumers do not query another module's collections directly. Provider specifications own contracts. The composition root wires handlers and UI extensions: foundation does not import the ledger merely because a season-lock panel appears in App Home. The ledger registers that panel through foundation's extension interface.
 
 Each module has a corresponding `SPEC-<module-id>.md` here. SPEC-common.md and the other supporting documents are shared constraints, not new modules. All module documents are proposed until human review; approval of this map is not approval of implementation.
+
+The [implementation plan](../../tasks/plan.md) and [issue-linked task index](implementation-tasks.md) now break these modules into executable slices and verification checkpoints. GitHub Issues is the task list target; this capability map continues to define ownership, not feature priority.

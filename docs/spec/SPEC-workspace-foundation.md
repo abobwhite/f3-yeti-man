@@ -121,3 +121,28 @@ Private AO channels, Enterprise org-wide installation, cross-region admins, auto
 ## Open questions
 
 Initial trusted F3 Nation Slack identity, the concrete secrets/key setup, operational contacts and restore evidence remain launch prerequisites in [the review register](decisions-and-open-questions.md). DigitalOcean hosting, indefinite competition-history retention and recovery targets are confirmed.
+
+## Implementation task links
+
+See [the complete issue index](implementation-tasks.md) and [execution plan](../../tasks/plan.md). The links below map this document’s requirements to implementation and verification work; they do not change requirement semantics or imply completion.
+
+| Task / issue | Scope | Requirements / acceptance cases |
+|---|---|---|
+| [T01 #2](https://github.com/abobwhite/f3-yeti-man/issues/2) | Scaffold the official Bolt starter without overwriting repository content | FOUND-12 |
+| [T04 #5](https://github.com/abobwhite/f3-yeti-man/issues/5) | Support real ephemeral and Docker MongoDB integration modes | FOUND-A5, FOUND-A9 |
+| [T05 #6](https://github.com/abobwhite/f3-yeti-man/issues/6) | Persist encrypted multi-workspace OAuth installations | FOUND-01, FOUND-02, FOUND-13 |
+| [T06 #7](https://github.com/abobwhite/f3-yeti-man/issues/7) | Enforce signed tenant, member and destination authorization | FOUND-03, FOUND-04, FOUND-11, FOUND-A1, FOUND-A2 |
+| [T07 #8](https://github.com/abobwhite/f3-yeti-man/issues/8) | Build the leased durable-operation and message-outbox runtime | FOUND-04 |
+| [T10 #11](https://github.com/abobwhite/f3-yeti-man/issues/11) | Provide the required setup gate and minimal legitimate admin setup | FOUND-05, FOUND-06, FOUND-07, FOUND-08, FOUND-09 |
+| [T15 #17](https://github.com/abobwhite/f3-yeti-man/issues/17) | Manage region settings, designated admins and reply mode in App Home | FOUND-05, FOUND-09, FOUND-10 |
+| [T16 #18](https://github.com/abobwhite/f3-yeti-man/issues/18) | Configure independent AO channels and weekday time schedules | FOUND-07, FOUND-08, FOUND-09, FOUND-11 |
+| [T18 #20](https://github.com/abobwhite/f3-yeti-man/issues/20) | Preview versioned scoring-policy changes and affected open seasons | FOUND-A10 |
+| [C2 #24](https://github.com/abobwhite/f3-yeti-man/issues/24) | Verify complete admin configuration and scoring lifecycle | FOUND-A3, FOUND-A4, FOUND-A6, FOUND-A7, FOUND-A8, FOUND-A10 |
+| [T24 #29](https://github.com/abobwhite/f3-yeti-man/issues/29) | Capture verified F3 source identity and sanitized event fixtures | FOUND-12 |
+| [T27 #32](https://github.com/abobwhite/f3-yeti-man/issues/32) | Receive trusted F3 message events through a replay-safe inbox | FOUND-12 |
+| [T40 #46](https://github.com/abobwhite/f3-yeti-man/issues/46) | Expose privacy-safe operational health and actionable failures | FOUND-03, FOUND-04, FOUND-14 |
+| [T41 #47](https://github.com/abobwhite/f3-yeti-man/issues/47) | Build the portable production Docker image and local app stack | FOUND-14, FOUND-A5, FOUND-A11 |
+| [T43 #49](https://github.com/abobwhite/f3-yeti-man/issues/49) | Define App Platform automatic promotion and application rollback | FOUND-14, FOUND-A11 |
+| [T44A #50](https://github.com/abobwhite/f3-yeti-man/issues/50) | Document and enforce indefinite competition retention and credential removal | FOUND-02, FOUND-13 |
+| [T44B #51](https://github.com/abobwhite/f3-yeti-man/issues/51) | Prepare monitored backups and a tested isolated restore procedure | FOUND-A12 |
+| [C7 #62](https://github.com/abobwhite/f3-yeti-man/issues/62) | Verify production readiness, regional isolation and recovery on the selected host | FOUND-A1, FOUND-A2, FOUND-A3, FOUND-A4, FOUND-A5, FOUND-A6, FOUND-A7, FOUND-A8, FOUND-A9, FOUND-A10, FOUND-A11, FOUND-A12 |

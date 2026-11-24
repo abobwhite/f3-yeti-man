@@ -135,4 +135,8 @@ Hosting, indefinite competition-history retention and recovery targets are resol
 
 ## Review and next phase
 
-Approve or revise these module specifications and defaults, and the remaining proposed operational/engineering defaults. Required configuration is detailed in [the shared configuration contract](configuration-contract.md). Q01 and Q02 are resolved by D16 and D25; neither needs to be asked again. After approval, the next phase is a technical implementation plan and discrete verified tasks; then scaffold with the explicitly requested create-slack-app workflow, starting with prerequisite/CLI detection and workspace authentication. Do not create an app in this repository just to validate the written specification.
+Approve or revise these module specifications and defaults, and the remaining proposed operational/engineering defaults. Required configuration is detailed in [the shared configuration contract](configuration-contract.md). Q01 and Q02 are resolved by D16 and D25; neither needs to be asked again. The user-requested technical implementation plan and discrete verified GitHub tasks are now linked below. Implementation begins with the explicitly requested create-slack-app workflow, starting with prerequisite/CLI detection and workspace authentication; creating the backlog does not itself start app implementation.
+
+## Implementation backlog
+
+On 2026-11-23, the user requested GitHub issues with implementation details, linked dependencies and reverse links in the specification. The [plan](../../tasks/plan.md) and [spec task index](implementation-tasks.md) record 54 implementation issues, 7 verification checkpoint issues and 79 explicit dependency edges. All 224 numbered requirements/acceptance cases are mapped; issue creation does not mark any capability implemented or authorize infrastructure rollout. GitHub Issues is the task list target rather than a duplicate local todo checklist.
