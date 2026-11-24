@@ -1,0 +1,22 @@
+{
+  "name": "f3-yeti-man",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Slack HTTP starter for F3 Yeti Man",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "dev": "node --watch src/app.js",
+    "start": "node src/app.js"
+  },
+  "engines": {
+    "node": ">=24.22.3 <25"
+  },
+  "dependencies": {
+    "@slack/bolt": "5.1.0",
+    "dotenv": "18.0.9"
+  },
+  "devDependencies": {
+    "@slack/cli-hooks": "2.0.0"
+  }
+}
