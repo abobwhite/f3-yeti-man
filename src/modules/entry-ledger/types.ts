@@ -1,13 +1,7 @@
 import { z } from 'zod';
 
-export const temperatureSchema = z.number().int().min(-40).max(120);
-export const scoringBandSchema = z.object({
-  minF: temperatureSchema,
-  maxF: temperatureSchema,
-  points: z.number().int().nonnegative().safe(),
-});
-
-export type ScoringBand = z.infer<typeof scoringBandSchema>;
+export type { ScoringBand } from '../../shared/scoring-bands.ts';
+export { scoringBandSchema, temperatureSchema } from '../../shared/scoring-bands.ts';
 
 export const workoutReferenceInputSchema = z.object({
   aoId: z.string().min(1),

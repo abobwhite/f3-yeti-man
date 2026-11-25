@@ -1,5 +1,33 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { Router, raw } from 'express';
 import type { Db } from 'mongodb';
+
+export function createSlackIngressRouter(db: Db, signingSecret: string): Router {
+  const router = Router();
+  router.post(
+    '/slack/events',
+    raw({ type: '*/*', limit: '1mb' }),
+    async (request, response, next) => {
+      try {
+        if (!Buffer.isBuffer(request.body)) throw new Error('Slack request body is unavailable.');
+        await verifySignedSlackRequest({
+          rawBody: request.body,
+          timestamp: request.header('x-slack-request-timestamp'),
+          signature: request.header('x-slack-signature'),
+          signingSecret,
+          db,
+        });
+        Object.assign(request, { rawBody: request.body });
+        next();
+      } catch (error) {
+        response.sendStatus(
+          error instanceof Error && /Slack request/.test(error.message) ? 401 : 503,
+        );
+      }
+    },
+  );
+  return router;
+}
 
 export async function verifySignedSlackRequest(options: {
   rawBody: Buffer;
