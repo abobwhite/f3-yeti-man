@@ -12,10 +12,11 @@ export const sectionBlock = (text: string) => ({
   text: markdownText(text),
 });
 
-export const button = (text: string, actionId: string) => ({
+export const button = (text: string, actionId: string, value?: string) => ({
   type: 'button' as const,
   text: plainText(text),
   action_id: actionId,
+  ...(value === undefined ? {} : { value }),
 });
 
 export const actionBlock = (...elements: ReturnType<typeof button>[]) => ({

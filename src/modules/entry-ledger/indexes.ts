@@ -1,6 +1,9 @@
 import type { Db } from 'mongodb';
 
 export async function provisionEntryIndexes(db: Db): Promise<void> {
+  await db
+    .collection('messageOutbox')
+    .createIndexes([{ key: { kind: 1, status: 1, availableAt: 1, leaseUntil: 1, createdAt: 1 } }]);
   await db.collection('entries').createIndexes([
     { key: { teamId: 1, regionId: 1, entryId: 1 }, unique: true },
     {
