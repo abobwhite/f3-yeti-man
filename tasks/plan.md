@@ -1,13 +1,13 @@
 # Implementation plan: F3 Yeti Man — V1
 
-Status: task breakdown requested by the user; no application implementation or production rollout performed.
+Status: implementation is underway. GitHub Issues holds live task status; [PROGRESS.md](../PROGRESS.md) records the current local handoff. This plan does not establish production rollout status.
 
 Source: [V1 specification](../docs/spec/README.md), merged in [PR #1](https://github.com/abobwhite/f3-yeti-man/pull/1). Task list target: **GitHub Issues** in `abobwhite/f3-yeti-man`; do not create a duplicate `tasks/todo.md` checklist. The [spec task index](../docs/spec/implementation-tasks.md) and per-module tables link requirements back to issues.
 
 ## Architecture and delivery constraints
 
 - Keep the five approved modules and one-way provider dependencies. Entries own competition facts; workouts remain external F3 Nation references. V1 observes Slack messages and does not call a presumed F3 API.
-- Use the confirmed Node.js/TypeScript/Bolt/official MongoDB driver direction and the balanced compiler/test/command contract. The repository starts with specifications only; proposed paths in issues are target paths.
+- Use the confirmed Node.js/TypeScript/Bolt/official MongoDB driver direction and the balanced compiler/test/command contract. The initial backlog assumed a spec-only repository; inspect current source and `package.json` before treating proposed issue paths or commands as missing.
 - Validate the minimum admin-confirmed setup, region isolation, real MongoDB transactions, duplicate identity and season/config fences before any live manual capture. Avoid building the complete admin/automation systems as early prerequisites.
 - Preserve user priority: manual capture -> full admin configuration -> manual total-points reporting -> source ingestion/inline capture -> remaining V1 -> scheduled reports. Checkpoints are completion prerequisites between these priorities.
 - One portable always-running Docker service on DigitalOcean App Platform with managed MongoDB serves isolated regions. Start around the dated $25/month estimate, measure the selected plan, deploy passing main revisions automatically and roll back code independently from data.

@@ -1,6 +1,8 @@
 # f3-yeti-man
 An app to support tracking F3 Yeti Man data and ways to read/write it - initially via a Slack app
 
+For scoped implementation work, start with [repository guidance](AGENTS.md), the [selective spec index](SPEC_INDEX.md) and the [current handoff](PROGRESS.md). The [Codex workflow](docs/codex-workflow.md) covers chat boundaries, cache-aware context and targeted verification.
+
 ## Bolt HTTP starter
 
 This minimal TypeScript entrypoint is adapted from the [official non-AI Bolt starter](https://github.com/slack-samples/bolt-js-starter-template). The Slack CLI scaffold was created in a temporary directory and only the app-specific starter files were brought into this repository.
