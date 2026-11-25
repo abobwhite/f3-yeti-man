@@ -6,7 +6,7 @@ GitHub Issues is the task list target. This index links the 54 implementation ta
 
 ## Dependency and execution rules
 
-- Each issue contains direct **Blocked by** and **Blocks** links. These are explicit dependency links in issue bodies, not GitHub native blocking metadata. The graph has 79 edges and no cycles.
+- Each issue contains direct **Blocked by** and **Blocks** links in its body and matching native GitHub issue relationships. The graph has 79 edges and no cycles.
 - Start a task only when its linked blockers are complete. Milestone checkpoints preserve the six user priorities; tasks at one priority with satisfied blockers may run in parallel.
 - Foundation work in priority 1 is limited to the legitimate setup/isolation/ledger/runtime prerequisites for manual capture. Full admin UI is priority 2, admin entry browsing/cold-count reports are priority 5, and scheduled execution is priority 6.
 - Shared composition/provider files require coordination even when the graph permits parallel work. Keep the approved module dependency direction and record any necessary task split before expanding beyond about five files.
