@@ -46,6 +46,7 @@ test('explicit seasons support leap, same-year and inclusive boundary dates', as
   try {
     const { provider, context } = state;
     const suggestion = suggestWinterSeason(2023, 'America/Chicago');
+    assert.throws(() => suggestWinterSeason(99, 'UTC'), /Invalid season year/);
     assert.equal(suggestion.endDate, '2024-02-29');
     const winter = await provider.configureSeason(
       context,

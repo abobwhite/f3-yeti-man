@@ -19,7 +19,7 @@ type AdminBoundary = {
 };
 
 export function suggestWinterSeason(startYear: number, timezone: string): SeasonInput {
-  if (!Number.isInteger(startYear) || startYear < 1 || startYear > 9998)
+  if (!Number.isInteger(startYear) || startYear < 1000 || startYear > 9998)
     throw new RangeError('Invalid season year.');
   const endYear = startYear + 1;
   const februaryLastDay = new Date(Date.UTC(endYear, 2, 0)).getUTCDate();
