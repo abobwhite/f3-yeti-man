@@ -7,6 +7,7 @@ import {
   databaseMode,
   requireProductionDatabase,
 } from './modules/workspace-foundation/database.ts';
+import { createOperationDispatcher } from './modules/workspace-foundation/dispatcher.ts';
 import {
   provisionSlackRequestIndexes,
   verifySignedSlackRequest,
@@ -20,6 +21,10 @@ import {
   revokeWorkspaceInstallation,
 } from './modules/workspace-foundation/installations.ts';
 import { requireMember } from './modules/workspace-foundation/members.ts';
+import {
+  createOperationRepository,
+  provisionOperationIndexes,
+} from './modules/workspace-foundation/operations.ts';
 import { createTokenCipher } from './modules/workspace-foundation/token-crypto.ts';
 import { readRuntimeConfig } from './shared/runtime-config.ts';
 
@@ -39,12 +44,20 @@ const database = await connectDatabase({
 try {
   await provisionOAuthIndexes(database.db);
   await provisionSlackRequestIndexes(database.db);
+  await provisionOperationIndexes(database.db);
 } catch (error) {
   await database.close();
   throw error;
 }
 const installationStore = createInstallationStore(database.db, appId, cipher);
 const workspaceContexts = createWorkspaceContextProvider(database.db, database.client, appId);
+const operations = createOperationRepository(database.db, workspaceContexts.assertActive);
+// Downstream operation handlers are registered here as their owning modules land.
+const dispatcher = createOperationDispatcher({
+  repository: operations,
+  handlers: {},
+  onError: () => app.logger.error('Operation dispatcher failed.'),
+});
 const router = Router();
 router.post(
   '/slack/events',
@@ -91,6 +104,7 @@ export const app = new App({
 });
 
 export async function stopApp(): Promise<void> {
+  dispatcher.stop();
   try {
     await app.stop();
   } finally {
@@ -130,6 +144,7 @@ app.event('tokens_revoked', async ({ body, event }) => {
 
 try {
   await app.start(port);
+  dispatcher.start();
   app.logger.info('Yeti Man Bolt HTTP starter is running.');
 } catch (error) {
   await database?.close();
