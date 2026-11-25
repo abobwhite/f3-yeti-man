@@ -124,6 +124,23 @@ test('HTTP starter serves liveness and rejects an unsigned Slack request', async
       body: JSON.stringify({ type: 'url_verification', challenge: 'not-trusted' }),
     });
     assert.equal(unsigned.status, 401);
+    const challengeBody = JSON.stringify({ type: 'url_verification', challenge: 'trusted' });
+    const challengeTimestamp = String(Math.floor(Date.now() / 1000));
+    const challengeSignature = createHmac('sha256', 'local-test-signing-secret')
+      .update(`v0:${challengeTimestamp}:${challengeBody}`)
+      .digest('hex');
+    const challengeRequest = () =>
+      fetch(`${baseUrl}/slack/events`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-slack-request-timestamp': challengeTimestamp,
+          'x-slack-signature': `v0=${challengeSignature}`,
+        },
+        body: challengeBody,
+      });
+    assert.equal((await challengeRequest()).status, 200);
+    assert.equal((await challengeRequest()).status, 401);
 
     for (const teamId of ['TLOCAL1', 'TLOCAL2']) {
       await store.storeInstallation({
