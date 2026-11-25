@@ -1,5 +1,7 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import { config } from 'dotenv';
+import { createEntryProvider } from './modules/entry-ledger/entries.ts';
+import { provisionEntryIndexes } from './modules/entry-ledger/indexes.ts';
 import { provisionSeasonIndexes } from './modules/entry-ledger/season-repository.ts';
 import {
   createSeasonProvider,
@@ -55,6 +57,7 @@ try {
   await provisionOperationIndexes(database.db);
   await provisionSeasonIndexes(database.db);
   await provisionConfigurationIndexes(database.db);
+  await provisionEntryIndexes(database.db);
 } catch (error) {
   await database.close();
   throw error;
@@ -96,6 +99,17 @@ receiver.router.get('/health/live', (_request, response) => response.sendStatus(
 export const app = new App({
   receiver,
   clientOptions: { slackApiUrl },
+});
+
+export const entries = createEntryProvider({
+  db: database.db,
+  client: database.client,
+  foundation: {
+    assertActive: workspaceContexts.assertActive,
+    fenceActive: workspaceContexts.fenceActive,
+    assertConfigured: configuration.assertConfigured,
+  },
+  slack: app.client,
 });
 
 export async function stopApp(): Promise<void> {
