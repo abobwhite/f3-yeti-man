@@ -23,6 +23,8 @@ import { createSeasonRepository } from './season-repository.ts';
 import { workoutReferenceInputSchema } from './types.ts';
 import { validateWorkoutReference } from './workout-reference.ts';
 
+export type { Entry, SaveReceipt } from './entry-repository.ts';
+
 type Dependencies = {
   client: MongoClient;
   db: Db;
@@ -53,6 +55,23 @@ export function createEntryProvider({
     await requireMember(context, context.actorUserId, slack, foundation.assertActive);
   }
   return {
+    async getSummaryState(context: WorkspaceContext, entryId: string) {
+      assertWorkspaceContext(context);
+      const config = await foundation.assertConfigured(context);
+      const entry = await repository.get(context, z.uuid().parse(entryId));
+      if (!entry) throw new Error('NOT_FOUND_OR_FORBIDDEN');
+      const season = await seasons.get(context.teamId, context.regionId, entry.seasonId);
+      const ao = config.aos.find((item) => item.aoId === entry.workoutReference.aoId);
+      if (!season || !ao) throw new Error('SUMMARY_CONFIGURATION_UNAVAILABLE');
+      // Authoritative entry scores are published facts; staged projections are never queried here.
+      return {
+        entry,
+        aoName: ao.name,
+        channelId: ao.channelId,
+        locked: season.locked,
+        warnings: [] as string[],
+      };
+    },
     async getEntry(context: WorkspaceContext, entryId: string) {
       await authorize(context);
       const entry = await repository.get(context, z.uuid().parse(entryId));

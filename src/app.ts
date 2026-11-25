@@ -1,5 +1,7 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import { config } from 'dotenv';
+import { provisionMessageViewIndexes } from './modules/entry-capture/message-views.ts';
+import { createSummaryRuntime } from './modules/entry-capture/summary-runtime.ts';
 import { createEntryProvider } from './modules/entry-ledger/entries.ts';
 import { provisionEntryIndexes } from './modules/entry-ledger/indexes.ts';
 import { provisionSeasonIndexes } from './modules/entry-ledger/season-repository.ts';
@@ -58,6 +60,7 @@ try {
   await provisionSeasonIndexes(database.db);
   await provisionConfigurationIndexes(database.db);
   await provisionEntryIndexes(database.db);
+  await provisionMessageViewIndexes(database.db);
 } catch (error) {
   await database.close();
   throw error;
@@ -112,7 +115,19 @@ export const entries = createEntryProvider({
   slack: app.client,
 });
 
+export const summaries = createSummaryRuntime({
+  db: database.db,
+  app,
+  appId,
+  contexts: workspaceContexts,
+  installations: installationStore,
+  operations,
+  entries,
+});
+let stopSummaries: (() => void) | undefined;
+
 export async function stopApp(): Promise<void> {
+  stopSummaries?.();
   dispatcher.stop();
   try {
     await app.stop();
@@ -131,6 +146,7 @@ registerInstallationHandlers(app, database.db, appId);
 try {
   await app.start(port);
   dispatcher.start();
+  stopSummaries = summaries.start();
   app.logger.info('Yeti Man Bolt HTTP starter is running.');
 } catch (error) {
   await database?.close();

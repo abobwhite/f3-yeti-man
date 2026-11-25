@@ -46,7 +46,11 @@ export function createOperationRepository(
   const jobs = db.collection<Operation>('operationalJobs');
   const slots = db.collection<z.infer<typeof slotSchema>>('slackDeliverySlots');
   return {
-    async reserveDeliverySlot(job: Operation, now: Date, spacingMs: number): Promise<number> {
+    async reserveDeliverySlot(
+      job: Pick<Operation, 'teamId' | 'regionId'>,
+      now: Date,
+      spacingMs: number,
+    ): Promise<number> {
       const nextAt = new Date(now.getTime() + spacingMs);
       const tenant = { _id: job.teamId, teamId: job.teamId, regionId: job.regionId };
       const result = await slots.findOneAndUpdate(
@@ -67,7 +71,10 @@ export function createOperationRepository(
       const existing = slotSchema.parse(await slots.findOne(tenant));
       return Math.max(1000, existing.nextAt.getTime() - now.getTime());
     },
-    async deferDeliverySlot(job: Operation, until: Date): Promise<void> {
+    async deferDeliverySlot(
+      job: Pick<Operation, 'teamId' | 'regionId'>,
+      until: Date,
+    ): Promise<void> {
       await slots.updateOne(
         { _id: job.teamId, teamId: job.teamId, regionId: job.regionId },
         { $max: { nextAt: until } },
