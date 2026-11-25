@@ -1,6 +1,12 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import { config } from 'dotenv';
 import { Router, raw } from 'express';
+import { provisionSeasonIndexes } from './modules/entry-ledger/season-repository.ts';
+import {
+  createSeasonProvider,
+  registerSeasonAdminPanel,
+  type SeasonAdminPanel,
+} from './modules/entry-ledger/seasons.ts';
 import { createWorkspaceContextProvider } from './modules/workspace-foundation/context.ts';
 import {
   connectDatabase,
@@ -45,12 +51,18 @@ try {
   await provisionOAuthIndexes(database.db);
   await provisionSlackRequestIndexes(database.db);
   await provisionOperationIndexes(database.db);
+  await provisionSeasonIndexes(database.db);
 } catch (error) {
   await database.close();
   throw error;
 }
 const installationStore = createInstallationStore(database.db, appId, cipher);
 const workspaceContexts = createWorkspaceContextProvider(database.db, database.client, appId);
+const seasons = createSeasonProvider(database.db, workspaceContexts);
+export const adminPanels: { season?: SeasonAdminPanel } = {};
+registerSeasonAdminPanel((panel) => {
+  adminPanels.season = panel;
+}, seasons);
 const operations = createOperationRepository(database.db, workspaceContexts.assertActive);
 // Downstream operation handlers are registered here as their owning modules land.
 const dispatcher = createOperationDispatcher({
