@@ -1,10 +1,16 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import { config } from 'dotenv';
+import { Router, raw } from 'express';
+import { createWorkspaceContextProvider } from './modules/workspace-foundation/context.ts';
 import {
   connectDatabase,
   databaseMode,
   requireProductionDatabase,
 } from './modules/workspace-foundation/database.ts';
+import {
+  provisionSlackRequestIndexes,
+  verifySignedSlackRequest,
+} from './modules/workspace-foundation/ingress.ts';
 import {
   BOT_SCOPES,
   createInstallationStore,
@@ -13,6 +19,7 @@ import {
   revokeBotCredentials,
   revokeWorkspaceInstallation,
 } from './modules/workspace-foundation/installations.ts';
+import { requireMember } from './modules/workspace-foundation/members.ts';
 import { createTokenCipher } from './modules/workspace-foundation/token-crypto.ts';
 import { readRuntimeConfig } from './shared/runtime-config.ts';
 
@@ -31,11 +38,36 @@ const database = await connectDatabase({
 });
 try {
   await provisionOAuthIndexes(database.db);
+  await provisionSlackRequestIndexes(database.db);
 } catch (error) {
   await database.close();
   throw error;
 }
 const installationStore = createInstallationStore(database.db, appId, cipher);
+const workspaceContexts = createWorkspaceContextProvider(database.db, database.client, appId);
+const router = Router();
+router.post(
+  '/slack/events',
+  raw({ type: '*/*', limit: '1mb' }),
+  async (request, response, next) => {
+    try {
+      if (!Buffer.isBuffer(request.body)) throw new Error('Slack request body is unavailable.');
+      await verifySignedSlackRequest({
+        rawBody: request.body,
+        timestamp: request.header('x-slack-request-timestamp'),
+        signature: request.header('x-slack-signature'),
+        signingSecret,
+        db: database.db,
+      });
+      Object.assign(request, { rawBody: request.body });
+      next();
+    } catch (error) {
+      response.sendStatus(
+        error instanceof Error && /Slack request/.test(error.message) ? 401 : 503,
+      );
+    }
+  },
+);
 
 const receiver = new ExpressReceiver({
   signingSecret,
@@ -44,6 +76,7 @@ const receiver = new ExpressReceiver({
   clientSecret,
   scopes: [...BOT_SCOPES],
   installationStore,
+  router,
   installerOptions: {
     authVersion: 'v2',
     stateStore: createOAuthStateStore(database.db),
@@ -69,7 +102,13 @@ process.once('SIGTERM', () => {
   void stopApp().catch((error: unknown) => app.logger.error('Failed to stop the app.', error));
 });
 
-app.command('/yeti', async ({ ack }) => {
+app.command('/yeti', async ({ ack, command, client }) => {
+  const context = await workspaceContexts.resolveWorkspaceContext({
+    teamId: command.team_id,
+    actorUserId: command.user_id,
+    appId,
+  });
+  await requireMember(context, command.user_id, client, workspaceContexts.assertActive);
   await ack({ response_type: 'ephemeral', text: 'Yeti Man setup is in progress.' });
 });
 
