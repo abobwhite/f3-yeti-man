@@ -1,4 +1,6 @@
-import { type ScoringBand, scoringBandSchema, temperatureSchema } from './types.ts';
+import { type ScoringBand, temperatureSchema } from './types.ts';
+
+export { validateScoringBands } from '../../shared/scoring-bands.ts';
 
 export const defaultScoringBands: readonly ScoringBand[] = Object.freeze([
   { minF: -40, maxF: 0, points: 5 },
@@ -15,28 +17,6 @@ export function parseTemperature(input: unknown): number {
     throw new RangeError('Enter a whole temperature from -40 to 120°F.');
   }
   return temperatureSchema.parse(Number(input.trim()));
-}
-
-export function validateScoringBands(input: unknown): readonly ScoringBand[] {
-  const bands = scoringBandSchema
-    .array()
-    .min(1)
-    .parse(input)
-    .sort((a, b) => a.minF - b.minF);
-  let next = -40;
-  for (const band of bands) {
-    if (band.minF > band.maxF) throw new RangeError('A scoring band has reversed bounds.');
-    if (band.minF !== next) {
-      throw new RangeError(
-        band.minF < next
-          ? `Scoring bands overlap at ${band.minF}°F.`
-          : `Scoring bands leave a gap from ${next}°F to ${band.minF - 1}°F.`,
-      );
-    }
-    next = band.maxF + 1;
-  }
-  if (next !== 121) throw new RangeError(`Scoring bands leave a gap from ${next}°F to 120°F.`);
-  return Object.freeze(bands.map((band) => Object.freeze(band)));
 }
 
 export function pointsForTemperature(temperature: unknown, bands: readonly ScoringBand[]): number {

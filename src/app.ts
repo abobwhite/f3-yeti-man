@@ -1,12 +1,15 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import { config } from 'dotenv';
-import { Router, raw } from 'express';
 import { provisionSeasonIndexes } from './modules/entry-ledger/season-repository.ts';
 import {
   createSeasonProvider,
   registerSeasonAdminPanel,
   type SeasonAdminPanel,
 } from './modules/entry-ledger/seasons.ts';
+import {
+  createConfigurationProvider,
+  provisionConfigurationIndexes,
+} from './modules/workspace-foundation/configuration.ts';
 import { createWorkspaceContextProvider } from './modules/workspace-foundation/context.ts';
 import {
   connectDatabase,
@@ -15,22 +18,21 @@ import {
 } from './modules/workspace-foundation/database.ts';
 import { createOperationDispatcher } from './modules/workspace-foundation/dispatcher.ts';
 import {
+  createSlackIngressRouter,
   provisionSlackRequestIndexes,
-  verifySignedSlackRequest,
 } from './modules/workspace-foundation/ingress.ts';
+import { registerInstallationHandlers } from './modules/workspace-foundation/installation-handlers.ts';
 import {
   BOT_SCOPES,
   createInstallationStore,
   createOAuthStateStore,
   provisionOAuthIndexes,
-  revokeBotCredentials,
-  revokeWorkspaceInstallation,
 } from './modules/workspace-foundation/installations.ts';
-import { requireMember } from './modules/workspace-foundation/members.ts';
 import {
   createOperationRepository,
   provisionOperationIndexes,
 } from './modules/workspace-foundation/operations.ts';
+import { registerSetupHandlers } from './modules/workspace-foundation/setup-handlers.ts';
 import { createTokenCipher } from './modules/workspace-foundation/token-crypto.ts';
 import { readRuntimeConfig } from './shared/runtime-config.ts';
 
@@ -52,6 +54,7 @@ try {
   await provisionSlackRequestIndexes(database.db);
   await provisionOperationIndexes(database.db);
   await provisionSeasonIndexes(database.db);
+  await provisionConfigurationIndexes(database.db);
 } catch (error) {
   await database.close();
   throw error;
@@ -59,6 +62,8 @@ try {
 const installationStore = createInstallationStore(database.db, appId, cipher);
 const workspaceContexts = createWorkspaceContextProvider(database.db, database.client, appId);
 const seasons = createSeasonProvider(database.db, workspaceContexts);
+const configuration = createConfigurationProvider(database.db, workspaceContexts);
+configuration.registerSetupCheck(seasons.rawSeasonReadiness);
 export const adminPanels: { season?: SeasonAdminPanel } = {};
 registerSeasonAdminPanel((panel) => {
   adminPanels.season = panel;
@@ -70,29 +75,7 @@ const dispatcher = createOperationDispatcher({
   handlers: {},
   onError: () => app.logger.error('Operation dispatcher failed.'),
 });
-const router = Router();
-router.post(
-  '/slack/events',
-  raw({ type: '*/*', limit: '1mb' }),
-  async (request, response, next) => {
-    try {
-      if (!Buffer.isBuffer(request.body)) throw new Error('Slack request body is unavailable.');
-      await verifySignedSlackRequest({
-        rawBody: request.body,
-        timestamp: request.header('x-slack-request-timestamp'),
-        signature: request.header('x-slack-signature'),
-        signingSecret,
-        db: database.db,
-      });
-      Object.assign(request, { rawBody: request.body });
-      next();
-    } catch (error) {
-      response.sendStatus(
-        error instanceof Error && /Slack request/.test(error.message) ? 401 : 503,
-      );
-    }
-  },
-);
+const router = createSlackIngressRouter(database.db, signingSecret);
 
 const receiver = new ExpressReceiver({
   signingSecret,
@@ -128,31 +111,8 @@ process.once('SIGTERM', () => {
   void stopApp().catch((error: unknown) => app.logger.error('Failed to stop the app.', error));
 });
 
-app.command('/yeti', async ({ ack, command, client }) => {
-  const context = await workspaceContexts.resolveWorkspaceContext({
-    teamId: command.team_id,
-    actorUserId: command.user_id,
-    appId,
-  });
-  await requireMember(context, command.user_id, client, workspaceContexts.assertActive);
-  await ack({ response_type: 'ephemeral', text: 'Yeti Man setup is in progress.' });
-});
-
-app.event('app_uninstalled', async ({ body }) => {
-  if (body.api_app_id !== appId) throw new Error('Unexpected Slack application ID.');
-  await revokeWorkspaceInstallation(database.db, appId, body.team_id, body.event_time);
-});
-
-app.event('tokens_revoked', async ({ body, event }) => {
-  if (body.api_app_id !== appId) throw new Error('Unexpected Slack application ID.');
-  await revokeBotCredentials(
-    database.db,
-    appId,
-    body.team_id,
-    event.tokens.bot ?? [],
-    body.event_time,
-  );
-});
+registerSetupHandlers({ app, appId, contexts: workspaceContexts, configuration, seasons });
+registerInstallationHandlers(app, database.db, appId);
 
 try {
   await app.start(port);
