@@ -114,6 +114,15 @@ export function createWorkspaceContextProvider(db: Db, client: MongoClient, appI
       return context;
     },
     assertActive: mappedRegion,
+    async fenceActive(context: WorkspaceContext, session: ClientSession): Promise<void> {
+      await mappedRegion(context, session);
+      const result = await installations.updateOne(
+        { _id: context.teamId, teamId: context.teamId, appId, active: true },
+        { $inc: { authorizationFence: 1 } },
+        { session },
+      );
+      if (result.matchedCount !== 1) throw new Error('NOT_FOUND_OR_FORBIDDEN');
+    },
     async requireAdmin(context: WorkspaceContext, session?: ClientSession): Promise<void> {
       const region = await mappedRegion(context, session);
       if (!region.adminUserIds.includes(context.actorUserId)) {

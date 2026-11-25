@@ -76,14 +76,17 @@ export function createSeasonRepository(db: Db) {
     async bySelector(teamId: string, regionId: string, selector: string) {
       return decode(await seasons.findOne({ teamId, regionId, selector }));
     },
-    async byDate(teamId: string, regionId: string, localDate: string) {
+    async byDate(teamId: string, regionId: string, localDate: string, session?: ClientSession) {
       return decode(
-        await seasons.findOne({
-          teamId,
-          regionId,
-          startDate: { $lte: localDate },
-          endDate: { $gte: localDate },
-        }),
+        await seasons.findOne(
+          {
+            teamId,
+            regionId,
+            startDate: { $lte: localDate },
+            endDate: { $gte: localDate },
+          },
+          { session },
+        ),
       );
     },
     async list(teamId: string, regionId: string) {

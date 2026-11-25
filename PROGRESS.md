@@ -1,23 +1,12 @@
 # Current handoff
 
-Keep this file short: replace the current handoff at a batch boundary rather than append a chat transcript. GitHub Issues remains the backlog and status authority. Historical implementation evidence is recoverable from git.
-
-## Baseline
-
-- Recorded 2026-11-25 against `f3a3592` (setup gate, PR #75).
-- Git history contains the T01–T10 implementation sequence: starter/TypeScript/checks, real MongoDB modes, encrypted installations, authorization, durable operations/outbox, scoring/reference rules, season fences and confirmed setup.
-- These are landed-code observations, not a fresh acceptance audit or a claim that GitHub issues are closed. The full baseline gate was not rerun for this documentation batch.
-- Next candidate: [T11 / issue #12](https://github.com/abobwhite/f3-yeti-man/issues/12), atomic versioned entry saves. Confirm blockers [T07 / #8](https://github.com/abobwhite/f3-yeti-man/issues/8) and [T10 / #11](https://github.com/abobwhite/f3-yeti-man/issues/11) are complete before starting.
-- T11 context: `docs/spec/SPEC-entry-ledger.md` (`LEDGER-06/07/09/10/11/12/15`) and `docs/spec/SPEC-entry-capture.md` (`CAPTURE-07/14`); read applicable common persistence/validation contracts too.
-
 ## Current batch
 
-- Scope: compact repo instructions, selective spec index, cost-aware chat/check workflow and this handoff. No application behavior changes.
-- Changed files: `AGENTS.md`, `SPEC_INDEX.md`, `PROGRESS.md`, `docs/codex-workflow.md`, `README.md`, `docs/spec/implementation-tasks.md`, `tasks/plan.md`.
-- Delivery: user explicitly authorized committing these changes, opening a PR and squash-merging it on 2026-11-25. GitHub records the resulting PR and merge status. This authorization covers this documentation batch only.
-- Verification: `git diff --check` passed. A one-off Python audit resolved local links in all seven changed documents, confirmed all 16 specs are indexed, checked the 50-line root guidance and matched documented npm script names to `package.json`. The log recipe was exercised under `zsh -e` with exit codes 0 and 7: both preserved status and full logs while bounding displayed output. `node --test --test-reporter=spec tests/unit/entry-ledger/rules.test.ts` passed (5/5) on unchanged application code. Full build/check skipped for this documentation-only batch.
-- Blockers: none for this batch. Model selection stays in the app; a new chat is optional at a useful task boundary.
-
-## Update contract
-
-For the next batch record: task/issue and requirement IDs; accepted scope/decisions; changed paths; actual HEAD plus uncommitted state; exact checks and outcomes (including failures/skips and log paths); unresolved questions; next task with blockers and relevant specs. A passing result applies only to the checked file state. Inspect `git status --short` and the relevant diff before reusing evidence.
+- Task: T11 / GitHub issue #12, atomic versioned entry saves (`LEDGER-06/07/09/10/11/12/15`, `CAPTURE-07/14`). GitHub issue is In Progress; direct blockers #8 and #11 are closed as completed.
+- Baseline: `ecf6fe1` on branch `codex/issue-12-atomic-entries`; implementation is uncommitted for user review. No commit, push, PR or closure authorized after review yet.
+- Added `src/modules/entry-ledger/{entries,entry-repository,indexes}.ts`: tenant-scoped providers/repositories, runtime schemas, retained identity/source uniqueness, immutable revisions, policy score projections, payload/actor-bound receipts and transactional summary outbox intent. Duplicate creates return the existing identity without overwriting facts. Modify preserves original attribution/source Qs and fences both seasons on moves.
+- Updated `src/app.ts`, `src/modules/entry-ledger/season-repository.ts` and `src/modules/workspace-foundation/context.ts` for provider composition, transactional season reads and active-installation fencing. Slack eligibility/destination calls precede retryable transactions; transaction callbacks contain database effects only.
+- Added `tests/integration/entry-ledger/entry-save.test.ts`: concurrent duplicate creates, retry conflicts, stale edits, retained archived/source identity, provenance, tenant isolation, cross-season moves, locks, configuration races and forced multi-document rollback.
+- Verification: entry-ledger module suite passed before the final provenance/tenant refinements (`/tmp/yeti-12-module.log`). Initial full gate failed on an incorrectly omitted Q in a test fixture (`/tmp/yeti-12-check.log`); fixture corrected. Final `npm run check` passed, exit 0: typecheck, lint, build, 15 unit tests, coverage (94.72% lines / 87.20% branches), and 22 integration tests (`/tmp/yeti-12-check-final.log`). Checks cover the current implementation file state atop `ecf6fe1`; only this handoff was edited afterward.
+- Unit-test review follow-up: added `src/modules/entry-ledger/entry-rules.ts` and `tests/unit/entry-ledger/entry-save.test.ts` (9 focused unit tests); the provider calls these extracted rules for input validation/digests, receipt binding, edit guards, season eligibility, duplicate decisions, entry construction, AO eligibility and retry limits. `AGENTS.md` now explicitly requires practical logic unit tests alongside real integration invariants. Focused unit test command passed (9/9), log `/tmp/yeti-12-unit-tests.log`. Final `npm run check` after this follow-up passed (exit 0): typecheck, lint, build, 24 unit tests, coverage (94.96% lines / 87.97% branches), and 22 integration tests. Log: `/tmp/yeti-12-unit-check.log`. This covers the current implementation file state atop `ecf6fe1`; only this handoff was edited afterward.
+- Next: user review of the uncommitted issue #12 implementation, then explicit post-review commit/PR instructions. #13 remains unstarted and depends on #12; its summary delivery handler will consume committed intent and current ledger state.

@@ -28,6 +28,8 @@ Use the installed toolchain from `package.json` and `package-lock.json` (Node 26
 | Full batch gate | `npm run check` (typecheck, lint, build, unit, coverage, integration) |
 
 - Iterate with affected test files; typecheck after meaningful TypeScript changes. Do not run full builds/suites after every small edit or repeat unchanged passing checks.
+- Add or update unit tests for all practical domain and orchestration logic introduced or changed: validation, decisions, transformations, error paths and boundary cases. Extract pure rules or inject dependencies when needed to test them without MongoDB or Slack. Integration coverage alone is insufficient for logic that can reasonably be unit tested; avoid tests that merely mirror implementation details.
+- Use integration tests alongside unit tests to verify real persistence behavior, indexes, transactions, tenant isolation and concurrency/lock guarantees. Keep explicit assertions for these invariants even when unit tests cover the underlying rules.
 - At the end of a code batch, run `npm run check` once before review. Do not also run its constituent commands again. Preserve coverage thresholds and explicit scoring, tenant, duplicate and lock assertions.
 - For documentation-only edits, check links, paths, command accuracy and `git diff --check`; application builds/tests are unnecessary unless executable behavior changed.
 - Keep verbose check output in a temporary log; report the exit status and a short summary. On failure, inspect the relevant diagnostics, expand if needed and retain the log path. Never hide a failing status with `| tail`, `|| true` or output truncation. A safe recipe is in `docs/codex-workflow.md`.
