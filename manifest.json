@@ -26,6 +26,7 @@
     ]
   },
   "oauth_config": {
+    "redirect_urls": ["https://example.com/slack/oauth_redirect"],
     "scopes": {
       "bot": ["commands", "chat:write", "channels:history", "channels:read", "users:read"]
     }
@@ -33,7 +34,7 @@
   "settings": {
     "event_subscriptions": {
       "request_url": "https://example.com/slack/events",
-      "bot_events": ["app_home_opened", "message.channels", "app_uninstalled"]
+      "bot_events": ["app_home_opened", "message.channels", "app_uninstalled", "tokens_revoked"]
     },
     "interactivity": {
       "is_enabled": true,

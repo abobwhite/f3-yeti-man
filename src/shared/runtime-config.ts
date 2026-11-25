@@ -1,6 +1,9 @@
 export interface RuntimeConfig {
-  botToken: string;
   signingSecret: string;
+  clientId: string;
+  clientSecret: string;
+  appId: string;
+  tokenEncryptionKeysJson: string;
   port: number;
   slackApiUrl: string | undefined;
 }
@@ -8,10 +11,15 @@ export interface RuntimeConfig {
 export function readRuntimeConfig(
   environment: Readonly<Record<string, string | undefined>>,
 ): RuntimeConfig {
-  const botToken = environment.SLACK_BOT_TOKEN;
   const signingSecret = environment.SLACK_SIGNING_SECRET;
-  if (!botToken || !signingSecret) {
-    throw new Error('Set SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET before starting the app.');
+  const clientId = environment.SLACK_CLIENT_ID;
+  const clientSecret = environment.SLACK_CLIENT_SECRET;
+  const appId = environment.SLACK_APP_ID;
+  const tokenEncryptionKeysJson = environment.TOKEN_ENCRYPTION_KEYS_JSON;
+  if (!signingSecret || !clientId || !clientSecret || !appId || !tokenEncryptionKeysJson) {
+    throw new Error(
+      'Set Slack OAuth credentials, SLACK_APP_ID, and TOKEN_ENCRYPTION_KEYS_JSON before starting the app.',
+    );
   }
 
   const port = Number(environment.PORT ?? 3000);
@@ -19,5 +27,13 @@ export function readRuntimeConfig(
     throw new RangeError('PORT must be an integer from 1 to 65535.');
   }
 
-  return { botToken, signingSecret, port, slackApiUrl: environment.SLACK_API_URL };
+  return {
+    signingSecret,
+    clientId,
+    clientSecret,
+    appId,
+    tokenEncryptionKeysJson,
+    port,
+    slackApiUrl: environment.SLACK_API_URL,
+  };
 }
