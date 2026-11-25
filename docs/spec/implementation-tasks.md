@@ -1,6 +1,6 @@
 # Implementation tasks — V1
 
-Status: issue backlog created at the user’s request on 2026-11-23; implementation has not started.
+Status: issue backlog created at the user’s request on 2026-11-23; implementation is underway. GitHub Issues holds live task status; [PROGRESS.md](../../PROGRESS.md) records the current local handoff.
 
 GitHub Issues is the task list target. This index links the 54 implementation tasks and 7 verification checkpoints; acceptance criteria, verification commands, likely files and external prerequisites live in each issue. The [implementation plan](../../tasks/plan.md) records execution rules and risks. There is no duplicate `tasks/todo.md` checklist.
 
@@ -10,7 +10,7 @@ GitHub Issues is the task list target. This index links the 54 implementation ta
 - Start a task only when its linked blockers are complete. Milestone checkpoints preserve the six user priorities; tasks at one priority with satisfied blockers may run in parallel.
 - Foundation work in priority 1 is limited to the legitimate setup/isolation/ledger/runtime prerequisites for manual capture. Full admin UI is priority 2, admin entry browsing/cold-count reports are priority 5, and scheduled execution is priority 6.
 - Shared composition/provider files require coordination even when the graph permits parallel work. Keep the approved module dependency direction and record any necessary task split before expanding beyond about five files.
-- All tasks start open. Close them only with acceptance/verification evidence; spec requirements remain authoritative and no issue authorizes paid provisioning or posts to real Slack channels by itself.
+- Tasks were initially created open. Close them only with acceptance/verification evidence; spec requirements remain authoritative and no issue authorizes paid provisioning or posts to real Slack channels by itself.
 
 ## Milestone exits
 
