@@ -18,5 +18,7 @@ const files = ['unit', 'integration']
   .sort();
 if (files.length === 0) throw new Error(`No tests found for ${moduleId}.`);
 
-const result = spawnSync(process.execPath, ['--test', ...files], { stdio: 'inherit' });
+const result = spawnSync(process.execPath, ['--test', '--test-concurrency=1', ...files], {
+  stdio: 'inherit',
+});
 process.exitCode = result.status ?? 1;

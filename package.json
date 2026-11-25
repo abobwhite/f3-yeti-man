@@ -22,12 +22,14 @@
     "check": "node scripts/check.mjs"
   },
   "engines": {
-    "node": ">=24.22.3 <25"
+    "node": ">=26.13.1 <27"
   },
   "dependencies": {
     "@slack/bolt": "5.1.0",
+    "@slack/oauth": "4.0.0",
     "dotenv": "18.0.9",
-    "mongodb": "7.9.1"
+    "mongodb": "7.9.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.9",
@@ -35,5 +37,8 @@
     "@types/node": "24.19.2",
     "mongodb-memory-server": "11.4.0",
     "typescript": "7.0.2"
+  },
+  "allowScripts": {
+    "mongodb-memory-server@11.4.0": true
   }
 }
