@@ -1,5 +1,8 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import { config } from 'dotenv';
+import { createDraftRepository, provisionDraftIndexes } from './modules/entry-capture/drafts.ts';
+import { createManualCapture } from './modules/entry-capture/manual-command.ts';
+import { registerManualCapture } from './modules/entry-capture/manual-runtime.ts';
 import { provisionMessageViewIndexes } from './modules/entry-capture/message-views.ts';
 import { createSummaryRuntime } from './modules/entry-capture/summary-runtime.ts';
 import { createEntryProvider } from './modules/entry-ledger/entries.ts';
@@ -20,7 +23,10 @@ import {
   databaseMode,
   requireProductionDatabase,
 } from './modules/workspace-foundation/database.ts';
-import { createOperationDispatcher } from './modules/workspace-foundation/dispatcher.ts';
+import {
+  createOperationDispatcher,
+  type HandlerResult,
+} from './modules/workspace-foundation/dispatcher.ts';
 import {
   createSlackIngressRouter,
   provisionSlackRequestIndexes,
@@ -32,11 +38,13 @@ import {
   createOAuthStateStore,
   provisionOAuthIndexes,
 } from './modules/workspace-foundation/installations.ts';
+import type { Operation } from './modules/workspace-foundation/operations.ts';
 import {
   createOperationRepository,
   provisionOperationIndexes,
 } from './modules/workspace-foundation/operations.ts';
 import { registerSetupHandlers } from './modules/workspace-foundation/setup-handlers.ts';
+import { createTenantSlackClients } from './modules/workspace-foundation/tenant-slack.ts';
 import { createTokenCipher } from './modules/workspace-foundation/token-crypto.ts';
 import { readRuntimeConfig } from './shared/runtime-config.ts';
 
@@ -61,6 +69,7 @@ try {
   await provisionConfigurationIndexes(database.db);
   await provisionEntryIndexes(database.db);
   await provisionMessageViewIndexes(database.db);
+  await provisionDraftIndexes(database.db);
 } catch (error) {
   await database.close();
   throw error;
@@ -75,10 +84,10 @@ registerSeasonAdminPanel((panel) => {
   adminPanels.season = panel;
 }, seasons);
 const operations = createOperationRepository(database.db, workspaceContexts.assertActive);
-// Downstream operation handlers are registered here as their owning modules land.
+const operationHandlers: Record<string, (job: Operation) => Promise<HandlerResult>> = {};
 const dispatcher = createOperationDispatcher({
   repository: operations,
-  handlers: {},
+  handlers: operationHandlers,
   onError: () => app.logger.error('Operation dispatcher failed.'),
 });
 const router = createSlackIngressRouter(database.db, signingSecret);
@@ -104,6 +113,8 @@ export const app = new App({
   clientOptions: { slackApiUrl },
 });
 
+const tenantSlack = createTenantSlackClients(app.client, installationStore);
+
 export const entries = createEntryProvider({
   db: database.db,
   client: database.client,
@@ -112,7 +123,7 @@ export const entries = createEntryProvider({
     fenceActive: workspaceContexts.fenceActive,
     assertConfigured: configuration.assertConfigured,
   },
-  slack: app.client,
+  slack: tenantSlack.channels,
 });
 
 export const summaries = createSummaryRuntime({
@@ -125,6 +136,25 @@ export const summaries = createSummaryRuntime({
   entries,
 });
 let stopSummaries: (() => void) | undefined;
+
+const drafts = createDraftRepository(database.db, database.client);
+export const manualCapture = createManualCapture({
+  drafts,
+  configuration,
+  entries,
+  assertActive: workspaceContexts.assertActive,
+  enqueue: operations.enqueue,
+});
+operationHandlers['manual-entry-save'] = registerManualCapture({
+  app,
+  appId,
+  capture: manualCapture,
+  drafts,
+  contexts: workspaceContexts,
+  configuration,
+  tenantSlack,
+  summaries,
+});
 
 export async function stopApp(): Promise<void> {
   stopSummaries?.();

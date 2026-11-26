@@ -5,7 +5,6 @@ import type { createConfigurationProvider } from './configuration.ts';
 import type { createWorkspaceContextProvider } from './context.ts';
 import { requireMember } from './members.ts';
 import { parseSetupFields, setupHome, setupModal } from './setup-home.ts';
-import { setupRequiredMessage } from './setup-status.ts';
 
 type SetupDependencies = {
   app: App;
@@ -22,35 +21,6 @@ export function registerSetupHandlers({
   configuration,
   seasons,
 }: SetupDependencies): void {
-  app.command('/yeti', async ({ ack, command, client }) => {
-    const context = await contexts.resolveWorkspaceContext({
-      teamId: command.team_id,
-      actorUserId: command.user_id,
-      appId,
-    });
-    await requireMember(context, command.user_id, client, contexts.assertActive);
-    const status = await configuration.getSetupStatus(context);
-    if (command.text.trim().toLowerCase() === 'configure') {
-      let isAdmin = true;
-      try {
-        await contexts.requireAdmin(context);
-      } catch {
-        isAdmin = false;
-      }
-      await ack({
-        response_type: 'ephemeral',
-        text: isAdmin
-          ? 'Open the F3 Yeti Man app Home tab to review and confirm setup.'
-          : `Only a designated Yeti Man admin can configure setup.\n${setupRequiredMessage(status)}`,
-      });
-      return;
-    }
-    await ack({
-      response_type: 'ephemeral',
-      text: status.ready ? 'Yeti Man commands are being added.' : setupRequiredMessage(status),
-    });
-  });
-
   app.event('app_home_opened', async ({ event, body, client }) => {
     if (event.tab !== 'home') return;
     const context = await contexts.resolveWorkspaceContext({

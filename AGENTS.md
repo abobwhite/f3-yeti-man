@@ -2,7 +2,7 @@
 
 ## Scope and context
 
-- Leave changes uncommitted for review. Commit only when the user explicitly asks after review.
+- Review happens on pull requests. After implementation and required checks pass, commit the scoped changes, push a feature branch and create a PR without waiting for review of uncommitted code. Wait for the user to review/approve the PR before merging; do not merge or begin a dependent issue until that approval.
 - Start with `git status --short` and [PROGRESS.md](PROGRESS.md). Preserve existing work.
 - Use [SPEC_INDEX.md](SPEC_INDEX.md) to select the task's relevant spec sections, usually 1–2 files. Do not load all of `docs/spec/` or the whole implementation plan by default.
 - Read the selected issue's acceptance criteria and direct blockers before implementation. GitHub Issues is the task-status authority; `PROGRESS.md` is a short local handoff, not a second backlog.
@@ -47,6 +47,6 @@ Use the installed toolchain from `package.json` and `package-lock.json` (Node 26
 ## Handoff and efficiency
 
 - Update only the current handoff in `PROGRESS.md` at a batch boundary: task/requirement IDs, changed files, verification commands/results, blockers and next step. Record the checked revision and any later edits; never claim checks cover newer code.
-- Mark implementation complete only with acceptance evidence. Local completion does not authorize an issue closure, commit, push or merge.
+- Mark implementation complete only with acceptance evidence. Passing local checks authorizes the commit/push/PR review workflow above, not issue closure or merge; merge only after the user approves the PR.
 - Keep this file stable and concise (under 150 lines); keep changing task state in `PROGRESS.md`. Avoid repeated spec dumps, full history reads and long passing-test logs.
 - Model/reasoning choice belongs in the app. Prefer the least costly available setup that completes the slice reliably; increase reasoning for ambiguity, cross-module changes or difficult failures. Do not change it merely to follow a task counter.
