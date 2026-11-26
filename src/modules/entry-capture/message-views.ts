@@ -17,6 +17,7 @@ const viewSchema = z.object({
   leaseUntil: z.date().optional(),
   canonical: ref.optional(),
   previous: z.array(ref).default([]),
+  pendingRedirects: z.array(ref).optional(),
   version: z.number().int().nonnegative().default(0),
   fixedChannelId: z.string().optional(),
 });
@@ -92,6 +93,7 @@ export function createMessageViews(db: Db) {
       canonical: MessageReference,
       previous: MessageReference[],
       version: number,
+      pendingRedirects: MessageReference[] = [],
     ) {
       const result = await views.updateOne(
         { ...scope(context, view.entryId), leaseId: view.leaseId, status: 'sending' },
@@ -100,6 +102,7 @@ export function createMessageViews(db: Db) {
             canonical: ref.parse(canonical),
             previous: previous.map((item) => ref.parse(item)),
             version,
+            pendingRedirects: pendingRedirects.map((item) => ref.parse(item)),
           },
         },
       );

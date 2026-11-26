@@ -31,14 +31,26 @@ export function createSummaryDelivery(options: {
     ): Promise<void>;
   };
   loadState(context: WorkspaceContext, entryId: string): Promise<SummaryState>;
-  authorizeDestination(context: WorkspaceContext, channelId: string): Promise<void>;
+  authorizeDestination(
+    context: WorkspaceContext,
+    channelId: string,
+    purpose: 'destination' | 'previous',
+  ): Promise<void>;
   reserveSlot(context: WorkspaceContext, now: Date): Promise<number>;
   deferSlot(context: WorkspaceContext, until: Date): Promise<void>;
   slack(context: WorkspaceContext): Promise<SummarySlackClient>;
   now?: () => Date;
 }) {
   const now = options.now ?? (() => new Date());
+  async function currentLink(context: WorkspaceContext, entryId: string) {
+    const view = await options.views.get(context, entryId);
+    const state = await options.loadState(context, entryId);
+    return view?.status === 'idle' && view.canonical && view.version >= state.entry.version
+      ? summaryLink(context.teamId, view.canonical.channelId, view.canonical.messageTs)
+      : undefined;
+  }
   return {
+    currentLink,
     async deliver(context: WorkspaceContext, operationKey: string) {
       const job = await options.outbox.claim(context, operationKey, now());
       if (!job) return;
@@ -63,9 +75,7 @@ export function createSummaryDelivery(options: {
         }
         // Reload after acquiring serialization/rate-limit boundaries. Job revisions are hints only.
         const state = await options.loadState(context, job.entryId);
-        if (view.fixedChannelId && view.fixedChannelId !== state.channelId)
-          throw new Error('FIXED_AO_CONTEXT_CHANGED');
-        await options.authorizeDestination(context, state.channelId);
+        await options.authorizeDestination(context, state.channelId, 'destination');
         const message = renderSummary(state);
         if (!(await options.views.markSending(context, view, now()))) {
           await options.outbox.finish(context, job, 'pending', now());
@@ -74,6 +84,7 @@ export function createSummaryDelivery(options: {
         sending = true;
         let canonical = view.canonical;
         const previous = [...view.previous];
+        let pending = [...(view.pendingRedirects ?? view.previous)];
         if (canonical && canonical.channelId === state.channelId)
           await client.update(canonical, message);
         else {
@@ -81,17 +92,39 @@ export function createSummaryDelivery(options: {
           canonical = await client.post(state.channelId, message);
           if (old) previous.push(old);
           // Persist the new canonical reference before refreshing any older locations.
-          await options.views.checkpoint(context, view, canonical, previous, state.entry.version);
+          pending = [...previous];
+          await options.views.checkpoint(
+            context,
+            view,
+            canonical,
+            previous,
+            state.entry.version,
+            pending,
+          );
         }
+        // Canonical delivery is now known. Redirects are idempotent and cannot make it uncertain.
+        sending = false;
         const link = summaryLink(context.teamId, canonical.channelId, canonical.messageTs);
-        for (const reference of previous) {
-          await options.authorizeDestination(context, reference.channelId);
+        for (const reference of [...pending]) {
+          await options.authorizeDestination(context, reference.channelId, 'previous');
           await client.update(reference, {
             text: `Entry moved. <${link}|View current entry>`,
             blocks: [],
           });
+          pending = pending.filter(
+            (item) =>
+              item.channelId !== reference.channelId || item.messageTs !== reference.messageTs,
+          );
+          await options.views.checkpoint(
+            context,
+            view,
+            canonical,
+            previous,
+            state.entry.version,
+            pending,
+          );
         }
-        await options.views.checkpoint(context, view, canonical, [], state.entry.version);
+        await options.views.checkpoint(context, view, canonical, previous, state.entry.version);
         await options.views.release(context, view, 'idle');
         sending = false;
         await options.outbox.finish(context, job, 'succeeded', now());
@@ -114,13 +147,7 @@ export function createSummaryDelivery(options: {
     },
     async confirmation(context: WorkspaceContext, entryId: string) {
       try {
-        const view = await options.views.get(context, entryId);
-        const state = await options.loadState(context, entryId);
-        return savedConfirmation(
-          view?.status === 'idle' && view.canonical && view.version >= state.entry.version
-            ? summaryLink(context.teamId, view.canonical.channelId, view.canonical.messageTs)
-            : undefined,
-        );
+        return savedConfirmation(await currentLink(context, entryId));
       } catch {
         // The ledger receipt already committed; delivery/read failure cannot turn it into Save failed.
         return savedConfirmation();

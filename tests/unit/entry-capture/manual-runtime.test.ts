@@ -49,6 +49,10 @@ function setup() {
     },
   };
   const capture = {
+    async modify() {
+      calls.push('modify');
+      return { draft: f.draft, view: editorView(f.draft, f.config) };
+    },
     async open() {
       calls.push('capture-open');
       if (failure) throw new Error('OPEN_FAILED');
@@ -274,4 +278,22 @@ test('worker renders durable saved/duplicate/archived/pending results and reopen
   );
   h.setStatus('queued');
   assert.equal((await h.handle(job as never)).status, 'pending');
+});
+
+test('slash edit opens the saved-entry path and rejects invalid IDs privately', async () => {
+  const h = setup();
+  await h.invoke('/yeti', {
+    command: {
+      team_id: 'TONE',
+      user_id: 'UADMIN',
+      channel_id: 'CGENERAL',
+      trigger_id: 'TRIGGER',
+      text: `edit ${h.draft._id}`,
+    },
+  });
+  assert.deepEqual(h.calls, ['ack', 'modal-open', 'modify']);
+  await h.invoke('/yeti', {
+    command: { team_id: 'TONE', user_id: 'UADMIN', text: 'edit invalid' },
+  });
+  assert.match(JSON.stringify(h.responses), /Find the ID/);
 });

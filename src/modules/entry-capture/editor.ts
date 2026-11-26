@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   actionBlock,
   button,
+  inputBlock as input,
   plainText,
   sectionBlock,
   textInputBlock,
@@ -9,6 +10,11 @@ import {
 import { parseTemperature, pointsForTemperature } from '../entry-ledger/scoring.ts';
 import type { ReadyConfiguration } from '../workspace-foundation/configuration.ts';
 import type { EditorValues, EntryDraft } from './drafts.ts';
+import { editorErrorMessage, historicalPaxBlocks, reviewSections } from './editor-fields.ts';
+
+export { editorErrorMessage } from './editor-fields.ts';
+
+import { assertEditOrigin } from './modify.ts';
 
 export function localToday(now: Date, timezone: string): string {
   const parts = Object.fromEntries(
@@ -45,6 +51,10 @@ const fieldState = z
     selected_date: z.string().nullable().optional(),
     selected_time: z.string().nullable().optional(),
     selected_users: z.array(z.string()).nullable().optional(),
+    selected_options: z
+      .array(z.object({ value: z.string() }))
+      .nullable()
+      .optional(),
     selected_option: z.object({ value: z.string() }).nullable().optional(),
     type: z.string().optional(),
   })
@@ -57,6 +67,19 @@ export function readEditorValues(raw: unknown, draft: EntryDraft): EditorValues 
   const aoId =
     aoField?.selected_option === null ? '' : (aoField?.selected_option?.value ?? draft.values.aoId);
   if (draft.fixedAoId && aoId !== draft.fixedAoId) throw new Error('FIXED_AO_REQUIRED');
+  const historical = draft.historicalPaxUserIds ?? [];
+  const retained = historical.flatMap((_, index) => {
+    if (index % 10) return [];
+    const selected = field(`historical_${index / 10}`)?.selected_options;
+    if (selected === undefined)
+      return historical
+        .slice(index, index + 10)
+        .filter((id) => draft.values.paxUserIds.includes(id));
+    const ids = (selected ?? []).map((option) => option.value);
+    if (ids.some((id) => !historical.slice(index, index + 10).includes(id)))
+      throw new Error('HISTORICAL_PAX_INVALID');
+    return ids;
+  });
   return {
     aoId,
     localDate:
@@ -68,7 +91,7 @@ export function readEditorValues(raw: unknown, draft: EntryDraft): EditorValues 
         ? ''
         : (field(`time_${draft.timeGeneration}`)?.selected_time ?? draft.values.localStartTime),
     temperatureF: field('temperature')?.value ?? '',
-    paxUserIds: field('pax')?.selected_users ?? [],
+    paxUserIds: [...new Set([...(field('pax')?.selected_users ?? []), ...retained])],
     offset: field('offset')?.value ?? '',
   };
 }
@@ -79,7 +102,12 @@ export function refreshDraft(
   config: ReadyConfiguration,
   now: Date,
 ): EntryDraft {
-  if (!config.aos.some((ao) => ao.active && ao.aoId === values.aoId) && values.aoId)
+  if (
+    !config.aos.some(
+      (ao) => (ao.active || ao.aoId === draft.originalAoId) && ao.aoId === values.aoId,
+    ) &&
+    values.aoId
+  )
     throw new Error('AO_NOT_CONFIGURED');
   const userTime =
     draft.timeOrigin === 'user' ||
@@ -108,8 +136,13 @@ export function validateSubmission(
   draft: EntryDraft,
   config: ReadyConfiguration,
 ) {
+  assertEditOrigin(draft, config);
   if (draft.fixedAoId && values.aoId !== draft.fixedAoId) throw new Error('FIXED_AO_REQUIRED');
-  if (!config.aos.some((ao) => ao.active && ao.aoId === values.aoId))
+  if (
+    !config.aos.some(
+      (ao) => (ao.active || ao.aoId === draft.originalAoId) && ao.aoId === values.aoId,
+    )
+  )
     throw new Error('AO_NOT_CONFIGURED');
   parseTemperature(values.temperatureF);
   z.array(z.string().regex(/^[A-Z][A-Z0-9]+$/))
@@ -123,15 +156,8 @@ export function validateSubmission(
   if (values.offset && !/^[+-](?:0\d|1[0-4]):[0-5]\d$/.test(values.offset))
     throw new Error('WORKOUT_OFFSET_INVALID');
 }
-const input = <T>(blockId: string, label: string, element: T, dispatch = false) => ({
-  type: 'input' as const,
-  block_id: blockId,
-  label: plainText(label),
-  element,
-  ...(dispatch ? { dispatch_action: true } : {}),
-});
 export function editorView(draft: EntryDraft, config: ReadyConfiguration) {
-  const aos = config.aos.filter((ao) => ao.active);
+  const aos = config.aos.filter((ao) => ao.active || ao.aoId === draft.originalAoId);
   if (aos.length === 0 || aos.length > 100) throw new Error('AO_CONFIGURATION_LIMIT');
   const choices = aos.map((ao) => ({ text: plainText(ao.name.slice(0, 75)), value: ao.aoId }));
   const selected = choices.find((option) => option.value === draft.values.aoId);
@@ -155,8 +181,21 @@ export function editorView(draft: EntryDraft, config: ReadyConfiguration) {
       ),
       ...(draft.errorCode
         ? [
-            sectionBlock(editorErrorMessage(draft.errorCode)),
-            actionBlock(button('Review current settings', 'yeti_manual_review')),
+            sectionBlock(editorErrorMessage(draft.errorCode, draft.entryId)),
+            ...(draft.conflictLink
+              ? [sectionBlock(`<${draft.conflictLink}|View existing entry>`)]
+              : []),
+            ...(draft.reviewTarget ? reviewSections(draft.reviewTarget.summary) : []),
+            actionBlock(
+              button(
+                draft.entryId
+                  ? draft.reviewTarget
+                    ? 'Use reviewed versions'
+                    : 'Review latest saved entry'
+                  : 'Review current settings',
+                'yeti_manual_review',
+              ),
+            ),
           ]
         : []),
       ...(draft.fixedAoId
@@ -216,11 +255,21 @@ export function editorView(draft: EntryDraft, config: ReadyConfiguration) {
         'Actual starting temperature °F (-40 to 120)',
         draft.values.temperatureF,
       ),
-      input('pax', 'PAX attendance', {
-        type: 'multi_users_select' as const,
-        action_id: 'value',
-        ...(draft.values.paxUserIds.length ? { initial_users: draft.values.paxUserIds } : {}),
-      }),
+      ...historicalPaxBlocks(draft),
+      {
+        ...input('pax', draft.entryId ? 'Add PAX attendance' : 'PAX attendance', {
+          type: 'multi_users_select' as const,
+          action_id: 'value',
+          ...(draft.values.paxUserIds.some((id) => !draft.historicalPaxUserIds?.includes(id))
+            ? {
+                initial_users: draft.values.paxUserIds.filter(
+                  (id) => !draft.historicalPaxUserIds?.includes(id),
+                ),
+              }
+            : {}),
+        }),
+        ...(draft.entryId ? { optional: true } : {}),
+      },
       textInputBlock(
         'offset',
         'UTC offset (only required for repeated DST times, e.g. -06:00)',
@@ -233,18 +282,6 @@ export function editorView(draft: EntryDraft, config: ReadyConfiguration) {
       ),
     ],
   };
-}
-export function editorErrorMessage(code: string): string {
-  if (/CONFIGURATION|CONFIG_VERSION/.test(code))
-    return 'Settings changed. Your proposed values are preserved. Review current settings before saving again.';
-  if (/EXPIRED/.test(code))
-    return 'This private form expired. Run /yeti log to reopen from current settings.';
-  if (/LOCKED/.test(code)) return 'The season is locked. Your proposed values have not been saved.';
-  if (/eligible local|FORBIDDEN/.test(code))
-    return 'Verify the AO, local PAX membership and channel access. No entry was saved.';
-  if (/future|workout|WORKOUT|date|time|offset/i.test(code))
-    return 'Review the workout date/time and season. If the local time repeats at DST, enter its UTC offset.';
-  return 'Review the required fields, whole temperature (-40 to 120°F), and local PAX. No entry was saved.';
 }
 export function privateStatusView(text: string) {
   return {

@@ -19,6 +19,17 @@ export const draftSchema = z.object({
   actorUserId: z.string(),
   originChannelId: z.string(),
   fixedAoId: z.uuid().optional(),
+  entryId: z.uuid().optional(),
+  expectedEntryVersion: z.number().int().positive().optional(),
+  originalAoId: z.uuid().optional(),
+  historicalPaxUserIds: z.array(z.string()).optional(),
+  reviewTarget: z
+    .object({
+      entryVersion: z.number().int().positive(),
+      configurationRevision: z.number().int().positive(),
+      summary: z.string(),
+    })
+    .optional(),
   configurationRevision: z.number().int().positive(),
   version: z.number().int().positive(),
   status: z.enum(['editing', 'queued', 'saved', 'cancelled']),
@@ -32,6 +43,10 @@ export const draftSchema = z.object({
   receiptEntryId: z.uuid().optional(),
   duplicate: z.boolean().optional(),
   errorCode: z.string().optional(),
+  conflictLink: z
+    .string()
+    .regex(/^slack:\/\/channel\?/)
+    .optional(),
 });
 export type EntryDraft = z.infer<typeof draftSchema>;
 export async function provisionDraftIndexes(db: Db) {

@@ -19,6 +19,7 @@ export function renderSummary({ entry, aoName, locked, warnings }: SummaryState)
     `Attendance: ${entry.paxUserIds.map((id) => `<@${id}>`).join(', ')}`,
     `Submitted by <@${entry.createdBy}> · ${entry.createdAt.toISOString()}`,
     `Last modified by <@${entry.updatedBy}> · ${entry.updatedAt.toISOString()}`,
+    `Entry ID: ${entry.entryId} · Correct the AO privately with /yeti edit ${entry.entryId} outside an AO channel.`,
     `Source Qs: ${entry.sourceQUserIds.length ? entry.sourceQUserIds.map((id) => `<@${id}>`).join(', ') : 'None recorded'}`,
     ...warnings.map((warning) => `Warning: ${escapeSlackText(warning)}`),
     ...(entry.status === 'archived' ? ['Archived — excluded from competition credit.'] : []),

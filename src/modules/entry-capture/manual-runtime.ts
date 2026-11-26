@@ -12,6 +12,7 @@ import type { createDraftRepository } from './drafts.ts';
 import { editorErrorMessage, privateStatusView, readMetadata } from './editor.ts';
 import type { createManualCapture } from './manual-command.ts';
 import { captureHelp, manualCommandKind } from './manual-command.ts';
+import { editCommandId, registerModifyHandlers } from './modify-runtime.ts';
 import type { createSummaryRuntime } from './summary-runtime.ts';
 
 export function registerManualCapture(options: {
@@ -27,6 +28,7 @@ export function registerManualCapture(options: {
   const { app, capture } = options;
   const resolve = (teamId: string, actorUserId: string) =>
     options.contexts.resolveWorkspaceContext({ teamId, actorUserId, appId: options.appId });
+  const openModification = registerModifyHandlers({ app, capture, resolve });
   app.command('/yeti', async ({ ack, command, client, respond }) => {
     await ack();
     const context = await resolve(command.team_id, command.user_id);
@@ -49,6 +51,19 @@ export function registerManualCapture(options: {
     }
     if (!status.ready) {
       await respond({ response_type: 'ephemeral', text: setupRequiredMessage(status) });
+      return;
+    }
+    try {
+      const entryId = editCommandId(command.text);
+      if (entryId) {
+        await openModification(context, entryId, command.channel_id, command.trigger_id, client);
+        return;
+      }
+    } catch {
+      await respond({
+        response_type: 'ephemeral',
+        text: 'Use /yeti edit <entry ID>. Find the ID on the saved summary.',
+      });
       return;
     }
     if (kind === 'help') {

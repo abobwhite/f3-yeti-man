@@ -24,6 +24,14 @@ export const actionBlock = (...elements: ReturnType<typeof button>[]) => ({
   elements,
 });
 
+export const inputBlock = <T>(blockId: string, label: string, element: T, dispatch = false) => ({
+  type: 'input' as const,
+  block_id: blockId,
+  label: plainText(label),
+  element,
+  ...(dispatch ? { dispatch_action: true } : {}),
+});
+
 export const textInputBlock = (
   blockId: string,
   label: string,

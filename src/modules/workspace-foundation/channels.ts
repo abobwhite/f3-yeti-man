@@ -49,6 +49,33 @@ export async function requirePublicLocalDestination(
   if (actorUserId !== context.actorUserId)
     throw new Error('Actor does not match verified context.');
   await requireMember(context, actorUserId, client, assertActive);
+  const destination = await requirePublicLocalChannel(context, channelId, client, assertActive);
+  let cursor: string | undefined;
+  let actorIsMember = false;
+  do {
+    const page = await client.conversations.members({
+      channel: channelId,
+      ...(cursor ? { cursor } : {}),
+      limit: 200,
+    });
+    if (!page.ok || !page.members) throw new Error('Unable to verify channel membership.');
+    actorIsMember ||= page.members.includes(actorUserId);
+    cursor = page.response_metadata?.next_cursor || undefined;
+  } while (cursor && !actorIsMember);
+  if (!actorIsMember) throw new Error('Actor is not a channel member.');
+  return destination;
+}
+
+/** App access for a trusted stored message reference; does not grant an actor permission to create entries. */
+export async function requirePublicLocalChannel(
+  context: WorkspaceContext,
+  channelId: string,
+  client: ChannelClient,
+  assertActive: (context: WorkspaceContext) => Promise<unknown>,
+): Promise<LocalChannel> {
+  assertWorkspaceContext(context);
+  slackId.parse(channelId);
+  await assertActive(context);
   const response = await client.conversations.info({ channel: channelId });
   const channel = response.channel;
   if (
@@ -69,18 +96,5 @@ export async function requirePublicLocalDestination(
   ) {
     throw new Error('Destination is not a writable local public channel.');
   }
-  let cursor: string | undefined;
-  let actorIsMember = false;
-  do {
-    const page = await client.conversations.members({
-      channel: channelId,
-      ...(cursor ? { cursor } : {}),
-      limit: 200,
-    });
-    if (!page.ok || !page.members) throw new Error('Unable to verify channel membership.');
-    actorIsMember ||= page.members.includes(actorUserId);
-    cursor = page.response_metadata?.next_cursor || undefined;
-  } while (cursor && !actorIsMember);
-  if (!actorIsMember) throw new Error('Actor is not a channel member.');
   return { channelId, name: channel.name ?? channelId };
 }
