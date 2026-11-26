@@ -10,7 +10,7 @@ Use `rg -n` to locate a task/requirement/heading and bounded file reads to inspe
 
 Example next-slice prompt:
 
-> Implement T11 (GitHub issue #12), after confirming blockers #8 and #11 are complete. Use PROGRESS.md and the T11 section of docs/spec/implementation-tasks.md to find its requirements in SPEC-entry-ledger.md and SPEC-entry-capture.md. Read applicable common contracts. Run affected tests while iterating and npm run check once at the end. Update PROGRESS.md with evidence and leave all changes uncommitted for review.
+> Implement T11 (GitHub issue #12), after confirming blockers #8 and #11 are complete. Use PROGRESS.md and the T11 section of docs/spec/implementation-tasks.md to find its requirements in SPEC-entry-ledger.md and SPEC-entry-capture.md. Read applicable common contracts. Run affected tests while iterating and npm run check once at the end. Update PROGRESS.md with evidence, commit the checked changes and open a PR for review. Wait for the user to approve the PR before merging or starting a dependent issue.
 
 When continuing within a chat, name the next task and any changed scope instead of pasting the same specs again. Start a fresh chat at a feature boundary, when switching areas, or when stale context becomes a burden. Before switching, record the current state and verification in `PROGRESS.md`; the next chat should inspect the real working tree, including uncommitted changes.
 

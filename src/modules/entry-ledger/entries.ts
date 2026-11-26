@@ -37,7 +37,7 @@ type Dependencies = {
       session?: ClientSession,
     ): Promise<ReadyConfiguration>;
   };
-  slack: ChannelClient;
+  slack: ChannelClient | ((context: WorkspaceContext) => Promise<ChannelClient>);
   now?: () => Date;
 };
 
@@ -52,9 +52,19 @@ export function createEntryProvider({
   const seasons = createSeasonRepository(db);
   async function authorize(context: WorkspaceContext) {
     assertWorkspaceContext(context);
-    await requireMember(context, context.actorUserId, slack, foundation.assertActive);
+    const client = typeof slack === 'function' ? await slack(context) : slack;
+    await requireMember(context, context.actorUserId, client, foundation.assertActive);
+    return client;
   }
   return {
+    async getSaveReceipt(context: WorkspaceContext, operationKey: string) {
+      await authorize(context);
+      z.string().min(1).max(200).parse(operationKey);
+      const receipt = await repository.receipt(context, operationKey);
+      if (receipt && receipt.actorUserId !== context.actorUserId)
+        throw new Error('NOT_FOUND_OR_FORBIDDEN');
+      return receipt;
+    },
     async getSummaryState(context: WorkspaceContext, entryId: string) {
       assertWorkspaceContext(context);
       const config = await foundation.assertConfigured(context);
@@ -101,7 +111,7 @@ export function createEntryProvider({
       expectedConfigurationRevision: number,
       operationKey: string,
     ): Promise<SaveReceipt> {
-      await authorize(context);
+      const memberClient = await authorize(context);
       const { input, temperatureF, payloadHash } = parseSaveCommand(
         raw,
         expectedVersion,
@@ -118,7 +128,7 @@ export function createEntryProvider({
         context,
         input.reference.paxUserIds,
         priorEntry?.paxUserIds ?? [],
-        slack,
+        memberClient,
         foundation.assertActive,
       );
       const reviewed = await foundation.assertConfigured(context, expectedConfigurationRevision);
@@ -127,7 +137,7 @@ export function createEntryProvider({
         context,
         ao.channelId,
         context.actorUserId,
-        slack,
+        memberClient,
         foundation.assertActive,
       );
       const session = client.startSession();
