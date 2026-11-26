@@ -16,6 +16,7 @@ import {
   scheduleTimes,
   validateSubmission,
 } from './editor.ts';
+import { assertEditOrigin, assertModifiable, modifySeed, reviewModification } from './modify.ts';
 
 export function assertEditingDraft(draft: EntryDraft, version: number, now: Date): void {
   if (draft.status !== 'editing' || draft.version !== version)
@@ -31,15 +32,16 @@ export function manualCommandKind(text: string): 'capture' | 'configure' | 'help
       : 'help';
 }
 export const captureHelp =
-  'Use /yeti or /yeti log to enter a workout privately. Review the AO, workout date/time, whole actual temperature (-40 to 120°F), and local PAX. Only open configured seasons count; workouts cannot start in the future. Patch threshold: 40 points. /yeti configure opens admin setup. Reporting commands will be added separately.';
+  'Use /yeti or /yeti log to enter a workout privately. Use /yeti edit <entry ID> to open a saved entry; run it outside an AO channel to correct the AO. Review the AO, workout date/time, whole actual temperature (-40 to 120°F), and local PAX. Only open configured seasons count; workouts cannot start in the future. Patch threshold: 40 points. /yeti configure opens admin setup. Reporting commands will be added separately.';
 
 export function createManualCapture(options: {
   drafts: ReturnType<typeof createDraftRepository>;
   configuration: Pick<ReturnType<typeof createConfigurationProvider>, 'assertConfigured'>;
   entries: Pick<
     ReturnType<typeof createEntryProvider>,
-    'saveEntry' | 'getEntry' | 'getSaveReceipt'
+    'saveEntry' | 'getEntry' | 'getSaveReceipt' | 'getSummaryState'
   >;
+  entryLink?(context: WorkspaceContext, entryId: string): Promise<string | undefined>;
   assertActive(context: WorkspaceContext): Promise<unknown>;
   enqueue(
     context: WorkspaceContext,
@@ -56,6 +58,27 @@ export function createManualCapture(options: {
     return draft;
   }
   return {
+    async modify(
+      context: WorkspaceContext,
+      entryId: string,
+      originChannelId: string,
+      slack: ChannelClient,
+    ) {
+      await requireMember(context, context.actorUserId, slack, options.assertActive);
+      const config = await options.configuration.assertConfigured(context);
+      const state = await options.entries.getSummaryState(context, entryId);
+      const seed = modifySeed(state.entry, state.locked, config, originChannelId, now());
+      if (seed.fixedAoId)
+        await requirePublicLocalDestination(
+          context,
+          originChannelId,
+          context.actorUserId,
+          slack,
+          options.assertActive,
+        );
+      const draft = await options.drafts.create(context, seed);
+      return { draft, view: editorView(draft, config) };
+    },
     async open(context: WorkspaceContext, originChannelId: string, slack: ChannelClient) {
       await requireMember(context, context.actorUserId, slack, options.assertActive);
       const config = await options.configuration.assertConfigured(context);
@@ -109,22 +132,29 @@ export function createManualCapture(options: {
         config,
         now(),
       );
+      const view = editorView(updated, config);
       await options.drafts.replace(context, draft, updated);
-      return editorView(updated, config);
+      return view;
     },
     async review(context: WorkspaceContext, id: string, version: number, raw: unknown) {
       const draft = await current(context, id, version);
       const config = await options.configuration.assertConfigured(context);
       const { errorCode: _previousError, ...retained } = draft;
+      const values = readEditorValues(raw, draft);
+      let reviewed = { ...retained, values, configurationRevision: config.revision };
+      if (draft.entryId) {
+        const state = await options.entries.getSummaryState(context, draft.entryId);
+        assertModifiable(state.entry, state.locked);
+        reviewed = reviewModification(draft, values, state.entry, config);
+      }
       const updated = {
-        ...retained,
-        values: readEditorValues(raw, draft),
-        configurationRevision: config.revision,
+        ...reviewed,
         version: draft.version + 1,
         expiresAt: new Date(now().getTime() + 30 * 60_000),
       };
+      const view = editorView(updated, config);
       await options.drafts.replace(context, draft, updated);
-      return editorView(updated, config);
+      return view;
     },
     async submit(
       context: WorkspaceContext,
@@ -134,12 +164,13 @@ export function createManualCapture(options: {
       viewId: string,
     ) {
       const draft = await current(context, id, version);
-      const config = await options.configuration.assertConfigured(
-        context,
-        draft.configurationRevision,
-      );
+      const config = await options.configuration.assertConfigured(context);
+      if (draft.reviewTarget) throw new Error('REVIEW_CURRENT_ENTRY');
       const values = readEditorValues(raw, draft);
-      validateSubmission(values, draft, config);
+      assertEditOrigin(draft, config);
+      // A stale configuration must reach the private review path even if it invalidates the proposed AO.
+      if (config.revision === draft.configurationRevision)
+        validateSubmission(values, draft, config);
       const operationKey = `manual:${draft._id}:${draft.version}`;
       const queued: EntryDraft = {
         ...draft,
@@ -203,6 +234,7 @@ export function createManualCapture(options: {
           receipt = await options.entries.saveEntry(
             context,
             {
+              ...(draft.entryId ? { entryId: draft.entryId } : {}),
               reference: {
                 aoId: values.aoId,
                 localDate: values.localDate,
@@ -212,9 +244,9 @@ export function createManualCapture(options: {
                 ...(values.offset ? { offset: values.offset } : {}),
               },
               temperatureF: values.temperatureF,
-              reason: 'Manual entry',
+              reason: draft.entryId ? 'Private entry correction' : 'Manual entry',
             },
-            0,
+            draft.expectedEntryVersion ?? 0,
             draft.configurationRevision,
             operationKey,
           );
@@ -226,8 +258,22 @@ export function createManualCapture(options: {
           /ENTRY_SAVE_CONFLICT_RETRY|RETRY_REQUIRED/.test(error.message)
         )
           throw error;
+        const conflictId =
+          error instanceof Error
+            ? /^ENTRY_REFERENCE_CONFLICT:([0-9a-f-]{36})$/i.exec(error.message)?.[1]
+            : undefined;
+        let conflictLink: string | undefined;
+        if (conflictId && options.entryLink) {
+          try {
+            conflictLink = await options.entryLink(context, conflictId);
+          } catch {
+            /* A pending summary still has the private edit-command fallback. */
+          }
+        }
+        const { conflictLink: _previousLink, ...retained } = draft;
         const failure: EntryDraft = {
-          ...draft,
+          ...retained,
+          ...(conflictLink ? { conflictLink } : {}),
           status: 'editing',
           version: draft.version + 1,
           errorCode: error instanceof Error ? error.message.slice(0, 200) : 'SAVE_RETRY_REQUIRED',

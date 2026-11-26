@@ -144,6 +144,7 @@ export const manualCapture = createManualCapture({
   entries,
   assertActive: workspaceContexts.assertActive,
   enqueue: operations.enqueue,
+  entryLink: summaries.delivery.currentLink,
 });
 operationHandlers['manual-entry-save'] = registerManualCapture({
   app,

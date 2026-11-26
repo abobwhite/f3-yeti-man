@@ -2,7 +2,10 @@ import type { App } from '@slack/bolt';
 import type { Db } from 'mongodb';
 import type { createEntryProvider } from '../entry-ledger/entries.ts';
 import { createSummaryOutbox } from '../entry-ledger/summary-outbox.ts';
-import { requirePublicLocalDestination } from '../workspace-foundation/channels.ts';
+import {
+  requirePublicLocalChannel,
+  requirePublicLocalDestination,
+} from '../workspace-foundation/channels.ts';
 import type { createWorkspaceContextProvider } from '../workspace-foundation/context.ts';
 import type { createInstallationStore } from '../workspace-foundation/installations.ts';
 import type { createOperationRepository } from '../workspace-foundation/operations.ts';
@@ -34,7 +37,7 @@ export function createSummaryRuntime(options: {
     outbox,
     deferSlot: (context, until) => options.operations.deferDeliverySlot(context, until),
     loadState: options.entries.getSummaryState,
-    authorizeDestination: async (context, channelId) => {
+    authorizeDestination: async (context, channelId, purpose) => {
       const botToken = await token(context.teamId);
       const client = {
         users: {
@@ -48,6 +51,10 @@ export function createSummaryRuntime(options: {
             options.app.client.conversations.members({ ...args, token: botToken }),
         },
       };
+      if (purpose === 'previous') {
+        await requirePublicLocalChannel(context, channelId, client, options.contexts.assertActive);
+        return;
+      }
       await requirePublicLocalDestination(
         context,
         channelId,

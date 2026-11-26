@@ -134,6 +134,7 @@ function harness() {
   const outcomes: string[] = [];
   const calls: string[] = [];
   let error: unknown;
+  let redirectError = false;
   let wait = 0;
   let loadError = false;
   const job: SummaryJob = {
@@ -167,8 +168,9 @@ function harness() {
       canonical: MessageView['canonical'],
       previous: MessageView['previous'],
       version: number,
+      pendingRedirects: MessageView['pendingRedirects'] = [],
     ) {
-      Object.assign(view, { canonical, previous, version });
+      Object.assign(view, { canonical, previous, version, pendingRedirects });
     },
     async release(_c: unknown, original: MessageView, status: MessageView['status']) {
       if (view.leaseId === original.leaseId) {
@@ -193,8 +195,8 @@ function harness() {
       calls.push('load');
       return state;
     },
-    async authorizeDestination(_c, channel) {
-      calls.push(`authorize:${channel}`);
+    async authorizeDestination(_c, channel, purpose) {
+      calls.push(`authorize:${channel}:${purpose}`);
     },
     async deferSlot(_context, until) {
       calls.push(`defer:${until.getTime() - now.getTime()}`);
@@ -212,6 +214,8 @@ function harness() {
         async update(reference, message) {
           calls.push(`update:${reference.channelId}:${message.text.startsWith('Entry moved')}`);
           if (error) throw error;
+          if (redirectError && message.text.startsWith('Entry moved'))
+            throw new Error('Historical message unavailable');
         },
       };
     },
@@ -225,6 +229,9 @@ function harness() {
     view: () => view,
     setError(value: unknown) {
       error = value;
+    },
+    setRedirectError(value: boolean) {
+      redirectError = value;
     },
     setWait(value: number) {
       wait = value;
@@ -253,7 +260,14 @@ test('AO relocation checkpoints new canonical and replaces old view with current
   await h.delivery.deliver(h.context, 'move');
   assert.equal(h.view().canonical?.channelId, 'CAO');
   assert.ok(h.calls.includes('update:COLD:true'));
-  assert.deepEqual(h.view().previous, []);
+  assert.equal(h.view().previous.length, 1);
+  h.state.channelId = 'CNEXT';
+  await h.delivery.deliver(h.context, 'move-again');
+  assert.equal(h.view().canonical?.channelId, 'CNEXT');
+  assert.equal(h.view().previous.length, 2);
+  assert.equal(h.calls.filter((call) => call === 'update:COLD:true').length, 2);
+  await h.delivery.deliver(h.context, 'ordinary-edit');
+  assert.equal(h.calls.filter((call) => call === 'update:COLD:true').length, 2);
 });
 
 test('rate limits retry safely, unknown post outcome blocks blind reposting', async () => {
@@ -273,12 +287,11 @@ test('rate limits retry safely, unknown post outcome blocks blind reposting', as
   assert.match((await unknown.delivery.confirmation(unknown.context, entryId)).text, /pending/);
 });
 
-test('preflight failures, installation pacing and fixed-AO mismatch initiate no remote send', async () => {
-  for (const scenario of ['setup', 'rate', 'fixed']) {
+test('preflight failures and installation pacing initiate no remote send', async () => {
+  for (const scenario of ['setup', 'rate']) {
     const h = harness();
     if (scenario === 'setup') h.setLoadError();
     if (scenario === 'rate') h.setWait(1100);
-    if (scenario === 'fixed') h.view().fixedChannelId = 'COTHER';
     await h.delivery.deliver(h.context, scenario);
     assert.deepEqual(h.outcomes, ['pending']);
     assert.equal(
@@ -328,4 +341,20 @@ test('summary worker prevents overlapping runs, reports failures and stops clean
   stop();
   t.mock.timers.tick(1000);
   assert.equal(calls, 2);
+});
+
+test('failed historical redirect stays retryable without making a known canonical post uncertain', async () => {
+  const h = harness();
+  h.view().canonical = { channelId: 'COLD', messageTs: '111.222' };
+  h.setRedirectError(true);
+  await h.delivery.deliver(h.context, 'move');
+  assert.equal(h.view().status, 'idle');
+  assert.equal(h.view().canonical?.channelId, 'CAO');
+  assert.equal(h.view().pendingRedirects?.length, 1);
+  assert.deepEqual(h.outcomes, ['pending']);
+  h.setRedirectError(false);
+  await h.delivery.deliver(h.context, 'retry');
+  assert.equal(h.calls.filter((call) => call.startsWith('post')).length, 1);
+  assert.deepEqual(h.view().pendingRedirects, []);
+  assert.deepEqual(h.outcomes, ['pending', 'succeeded']);
 });
